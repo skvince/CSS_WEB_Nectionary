@@ -1,0 +1,155 @@
+body {
+  font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+  background-color: #0b1220;
+  color: #f8fafc;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism & Custom Card Styling */
+.glass-card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(6, 182, 212, 0.15);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(6, 182, 212, 0.6);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px -5px rgba(6, 182, 212, 0.25);
+}
+
+/* Reference Banner Gradient Styling */
+.hero-banner-gradient {
+  background: linear-gradient(
+    135deg,
+    #0077b6 0%,
+    #0096c7 18%,
+    #03045e 65%,
+    #0b092a 100%
+  );
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  box-shadow: 0 20px 60px -10px rgba(0, 119, 182, 0.4);
+}
+
+/* Gradient Text Mask matching Reference */
+.gradient-text-purple-cyan {
+  background: linear-gradient(
+    90deg,
+    #a855f7 0%,
+    #8b5cf6 35%,
+    #06b6d4 80%,
+    #00f2fe 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Team Member Name Card Hover Effects */
+.team-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+.team-card:hover {
+  border-color: rgba(6, 182, 212, 0.8);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.3);
+  background: rgba(15, 23, 42, 0.9);
+}
+.team-name {
+  color: #f8fafc;
+  transition: all 0.3s ease;
+}
+.team-card:hover .team-name {
+  color: #06b6d4;
+  text-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0b1220;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+  border: 1px solid #06b6d4;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
+
+/* Animated fine mesh grid background */
+.bg-grid {
+  background-size: 36px 36px;
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(6, 182, 212, 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(6, 182, 212, 0.04) 1px,
+      transparent 1px
+    );
+}
+
+/* Canvas cursor grab effects */
+#webgl-container canvas {
+  cursor: grab;
+  outline: none;
+}
+#webgl-container canvas:active {
+  cursor: grabbing;
+}
+
+/* Modal loader opacity transition */
+#canvasLoader.opacity-0 {
+  opacity: 0;
+}
+#canvasLoader.pointer-events-none {
+  pointer-events: none;
+}
+
+.alphabet-filter-btn {
+  min-width: 2rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid #334155;
+  border-radius: 0.5rem;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.alphabet-filter-btn:hover,
+.alphabet-filter-btn:focus-visible {
+  border-color: #06b6d4;
+  color: #67e8f9;
+  outline: none;
+}
+
+.alphabet-filter-btn.active {
+  border-color: #06b6d4;
+  background: #06b6d4;
+  color: #060a12;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .alphabet-filter-btn {
+    transition: none;
+  }
+}
