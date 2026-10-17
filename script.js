@@ -439,6 +439,7 @@ HARDWARE_DATA.forEach((item) => {
     : "Simplified procedural study model; proportions and internal details vary by product.";
 });
 HARDWARE_DATA.push(...ADDITIONAL_HARDWARE_DATA);
+HARDWARE_DATA.sort((a, b) => compareCaseInsensitive(a.name, b.name));
 const ALTERNATE_HARDWARE_NAMES = {
   "audio-card": ["Sound Card"],
   cpu: ["CPU", "Processor"],
@@ -1420,7 +1421,7 @@ function renderHardwareCards() {
   home.classList.add("hidden");
 
   const query = searchQuery.trim().toLowerCase();
-  const filtered = HARDWARE_DATA.filter((item) => {
+  const filtered = sortByNameCaseInsensitive(HARDWARE_DATA.filter((item) => {
     const matchesCat =
       currentCategory === "All" || item.categories.includes(currentCategory);
     const matchesLetter =
@@ -1428,7 +1429,7 @@ function renderHardwareCards() {
       item.name.toUpperCase().startsWith(currentLetter);
     const matchesSearch = item.name.toLowerCase().includes(query);
     return matchesCat && matchesLetter && matchesSearch;
-  });
+  }));
 
   if (filtered.length === 0) {
     noResults.classList.remove("hidden");
@@ -1494,7 +1495,6 @@ function renderHardwareCards() {
     });
   }
 }
-
 function renderCategoryFilters() {
   const container = document.getElementById("categoryFilter");
   const categories = ["All", ...HARDWARE_CATEGORIES];

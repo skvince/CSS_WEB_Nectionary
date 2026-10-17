@@ -1,3 +1,20 @@
+const compareCaseInsensitive = (a, b) => {
+  const aKey = typeof a === "string" ? a.toLowerCase() : String(a || "").toLowerCase();
+  const bKey = typeof b === "string" ? b.toLowerCase() : String(b || "").toLowerCase();
+  if (aKey < bKey) return -1;
+  if (aKey > bKey) return 1;
+  return 0;
+};
+
+const sortByNameCaseInsensitive = (items) => {
+  if (!Array.isArray(items)) return items;
+  return [...items].sort((itemA, itemB) => {
+    const nameA = typeof itemA === "string" ? itemA : itemA?.name ?? itemA?.title ?? "";
+    const nameB = typeof itemB === "string" ? itemB : itemB?.name ?? itemB?.title ?? "";
+    return compareCaseInsensitive(nameA, nameB);
+  });
+};
+
 const HARDWARE_CATEGORIES = [
   "Input",
   "Processing",
@@ -6,7 +23,7 @@ const HARDWARE_CATEGORIES = [
   "Networking",
   "Power",
   "Supporting Component",
-];
+].sort(compareCaseInsensitive);
 
 const HARDWARE_PART_PROFILES = {
   chip: [
