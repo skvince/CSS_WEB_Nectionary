@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CSS WEBSITE NECTIONARY — Interactive 3D Hardware Viewer</title>
+    <title>3D Computer Hardware Museum Dictionary — Interactive 3D Viewer</title>
+    <meta
+      name="description"
+      content="Explore computer hardware from A to Z with interactive 3D models and beginner-friendly component guides."
+    />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -21,9 +25,9 @@
               violetAccent: "#A855F7",
             },
             boxShadow: {
-              cyanGlow: "0 0 25px rgba(6, 182, 212, 0.35)",
-              purpleGlow: "0 0 35px rgba(139, 92, 246, 0.4)",
-              heroShadow: "0 20px 50px rgba(2, 132, 199, 0.25)",
+              cyanGlow: "0 0 22px rgba(6, 182, 212, 0.28)",
+              purpleGlow: "0 0 28px rgba(139, 92, 246, 0.24)",
+              heroShadow: "0 20px 50px rgba(2, 132, 199, 0.3)",
             },
           },
         },
@@ -51,9 +55,136 @@
   <body
     class="bg-navyBg text-slate-100 min-h-screen bg-grid flex flex-col relative selection:bg-cyanGlow selection:text-navyBg"
   >
+    <section
+      id="landingPage"
+      class="landing-page min-h-screen w-full flex flex-col items-center px-4 py-5 sm:px-8 sm:py-7"
+      aria-labelledby="landingTitle"
+    >
+      <nav class="landing-nav max-w-6xl w-full" aria-label="Landing page">
+        <a class="landing-brand" href="#landingTitle" aria-label="CSS WEBSITE NECTIONARY home">
+          <span class="landing-brand-mark"><i class="fa-solid fa-microchip"></i></span>
+          <span class="landing-brand-name">CSS WEBSITE <strong>NECTIONARY</strong></span>
+        </a>
+        <button
+          id="landingMenuToggle"
+          class="landing-menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="landingNavLinks"
+          aria-label="Open navigation menu"
+        >
+          <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
+        <div id="landingNavLinks" class="landing-nav-links">
+          <a href="#landing-team">Meet the team</a>
+          <button type="button" onclick="enterMuseum()">
+            Explore the museum <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </nav>
+
+      <div
+        class="max-w-6xl w-full mt-8 sm:mt-12 p-7 sm:p-10 lg:p-14 rounded-[28px] hero-banner-gradient relative overflow-hidden grid lg:grid-cols-2 items-center gap-10"
+      >
+        <div class="relative z-10 space-y-6">
+          <div class="landing-eyebrow">
+            <span class="landing-eyebrow-dot"></span>
+            <span class="text-xs sm:text-sm font-bold tracking-widest uppercase font-mono">
+              A hands-on hardware museum
+            </span>
+          </div>
+          <h1
+            id="landingTitle"
+            class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight"
+          >
+            3D Computer Hardware
+            <span class="gradient-text-purple-cyan">Museum Dictionary</span>
+          </h1>
+          <p class="text-slate-200 text-base sm:text-lg leading-relaxed max-w-xl">
+            Explore computer hardware from A to Z with interactive 3D models,
+            beginner-friendly explanations, and hands-on component
+            identification.
+          </p>
+          <div class="landing-actions">
+            <button
+              type="button"
+              onclick="enterMuseum()"
+              class="landing-primary-button"
+            >
+              Get Explore
+              <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </button>
+            <a class="landing-secondary-button" href="#landing-highlights">
+              Discover the experience
+            </a>
+          </div>
+          <p class="text-xs text-slate-400 font-mono">
+            3D models · A–Z dictionary · Interactive key parts
+          </p>
+        </div>
+        <div class="landing-model-stage relative z-10">
+          <div id="landingModelCanvas" class="landing-model-canvas" aria-label="3D hardware model carousel" role="img"></div>
+          <div class="landing-model-caption">
+            <span class="landing-model-indicator"></span>
+            <span id="landingCarouselCaption" aria-live="polite">Explore hardware from every angle · CPU</span>
+          </div>
+          <span id="landingCarouselLabel" class="landing-model-label">PROCESSOR · 3D VIEW</span>
+          <div class="landing-carousel-indicators" role="group" aria-label="Choose a featured hardware model">
+            <button type="button" class="active" aria-label="Show CPU model" aria-pressed="true" data-carousel-index="0"></button>
+            <button type="button" aria-label="Show graphics card model" aria-pressed="false" data-carousel-index="1"></button>
+            <button type="button" aria-label="Show motherboard model" aria-pressed="false" data-carousel-index="2"></button>
+            <button type="button" aria-label="Show memory module model" aria-pressed="false" data-carousel-index="3"></button>
+            <button type="button" aria-label="Show NVMe SSD model" aria-pressed="false" data-carousel-index="4"></button>
+            <button type="button" aria-label="Show power supply model" aria-pressed="false" data-carousel-index="5"></button>
+            <button type="button" aria-label="Show heat sink model" aria-pressed="false" data-carousel-index="6"></button>
+          </div>
+        </div>
+      </div>
+
+      <a class="landing-scroll-cue" href="#landing-highlights">
+        <span>Scroll to explore</span>
+        <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+      </a>
+
+      <section
+        id="landing-highlights"
+        class="landing-highlights max-w-6xl w-full"
+        aria-labelledby="landingHighlightsTitle"
+      >
+        <div class="landing-section-heading">
+          <span>Inside the museum</span>
+          <h2 id="landingHighlightsTitle">Explore hardware from every angle</h2>
+        </div>
+        <div class="landing-feature-grid">
+          <article class="landing-feature">
+            <span class="landing-feature-icon"><i class="fa-solid fa-cube" aria-hidden="true"></i></span>
+            <div>
+              <h3>Realistic 3D exploration</h3>
+              <p>Rotate and inspect detailed hardware models in an interactive studio.</p>
+            </div>
+          </article>
+          <article class="landing-feature">
+            <span class="landing-feature-icon"><i class="fa-solid fa-crosshairs" aria-hidden="true"></i></span>
+            <div>
+              <h3>Interactive Key Parts</h3>
+              <p>Reveal important components with clear, model-attached labels.</p>
+            </div>
+          </article>
+          <article class="landing-feature">
+            <span class="landing-feature-icon"><i class="fa-solid fa-book-open" aria-hidden="true"></i></span>
+            <div>
+              <h3>Manufacturer references</h3>
+              <p>Continue learning with product references and source photos where verified.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+
     <!-- Header Navigation -->
     <header
-      class="sticky top-0 z-30 bg-[#0B1220]/90 backdrop-blur-md border-b border-cyanGlow/20 py-4 px-4 sm:px-8"
+      id="museumHeader"
+      class="hidden sticky top-0 z-30 bg-[#0B1220]/90 backdrop-blur-md border-b border-cyanGlow/20 py-4 px-4 sm:px-8"
     >
       <div
         class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4"
@@ -84,6 +215,7 @@
         </div>
 
         <!-- Search Bar -->
+        <div class="flex flex-col sm:flex-row items-stretch gap-2 w-full md:w-auto">
         <div class="relative w-full md:w-80">
           <i
             class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-cyanGlow/70"
@@ -103,42 +235,21 @@
             <i class="fa-solid fa-circle-xmark"></i>
           </button>
         </div>
+        <button
+          type="button"
+          onclick="returnToLanding()"
+          class="shrink-0 px-3 py-2 rounded-xl border border-violet-400/40 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-300 text-sm font-semibold transition-colors"
+        >
+          <i class="fa-solid fa-house mr-1.5"></i>Home
+        </button>
+        </div>
       </div>
 
       <!-- Filter Category Tabs -->
       <div
+        id="categoryFilter"
         class="max-w-7xl mx-auto mt-4 flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-1 text-xs sm:text-sm font-medium"
       >
-        <button
-          onclick="filterCategory('All')"
-          data-category="All"
-          class="filter-btn active-filter px-4 py-2 rounded-xl border border-cyanGlow bg-cyanGlow text-slate-950 font-bold shadow-cyanGlow whitespace-nowrap transition-all"
-        >
-          <i class="fa-solid fa-layer-group mr-1.5"></i> All Components (12)
-        </button>
-        <button
-          onclick="filterCategory('Internal Hardware')"
-          data-category="Internal Hardware"
-          class="filter-btn px-4 py-2 rounded-xl border border-slate-800 bg-cardBg hover:border-cyanGlow/50 text-slate-300 whitespace-nowrap transition-all"
-        >
-          <i class="fa-solid fa-cpu mr-1.5 text-cyanGlow"></i> Internal Hardware
-        </button>
-        <button
-          onclick="filterCategory('Peripherals / Input')"
-          data-category="Peripherals / Input"
-          class="filter-btn px-4 py-2 rounded-xl border border-slate-800 bg-cardBg hover:border-cyanGlow/50 text-slate-300 whitespace-nowrap transition-all"
-        >
-          <i class="fa-solid fa-keyboard mr-1.5 text-cyanGlow"></i> Peripherals
-          / Input
-        </button>
-        <button
-          onclick="filterCategory('Output Devices')"
-          data-category="Output Devices"
-          class="filter-btn px-4 py-2 rounded-xl border border-slate-800 bg-cardBg hover:border-cyanGlow/50 text-slate-300 whitespace-nowrap transition-all"
-        >
-          <i class="fa-solid fa-desktop mr-1.5 text-cyanGlow"></i> Output
-          Devices
-        </button>
       </div>
       <div
         id="alphabetFilter"
@@ -149,7 +260,7 @@
     </header>
 
     <!-- Hero Banner -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-8 pt-8 pb-4 w-full" id="home">
+    <section class="hidden max-w-7xl mx-auto px-4 sm:px-8 pt-8 pb-4 w-full" id="home">
       <div
         class="p-8 sm:p-12 sm:py-16 rounded-[28px] hero-banner-gradient relative overflow-hidden flex flex-col items-center text-center justify-center gap-6"
       >
@@ -217,7 +328,7 @@
 
     <!-- Main Content Hardware Card Grid -->
     <main
-      class="max-w-7xl mx-auto px-4 sm:px-8 py-6 flex-grow w-full"
+      class="hidden max-w-7xl mx-auto px-4 sm:px-8 py-6 flex-grow w-full"
       id="catalog"
     >
       <!-- Grid Container -->
@@ -331,6 +442,9 @@
               ></i>
               <span>Drag to rotate 360° | Scroll to zoom</span>
             </div>
+            <div class="absolute top-4 right-4 z-10 max-w-[52%] rounded-lg border border-slate-700/70 bg-navyBg/80 px-2.5 py-1.5 text-right text-[10px] leading-relaxed text-slate-400 backdrop-blur-md" id="modelDisclaimer">
+              Reference-guided procedural study model.
+            </div>
 
             <!-- Canvas Loading Overlay -->
             <div
@@ -351,6 +465,17 @@
             <div
               class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 bg-[#0B101D]/90 border border-cyanGlow/30 backdrop-blur-md p-1.5 rounded-2xl shadow-cyanGlow/20"
             >
+              <button
+                id="explodedViewToggle"
+                type="button"
+                onclick="toggleExplodedView()"
+                class="hidden p-2 text-violet-200 hover:text-white hover:bg-violet-500/30 rounded-xl text-sm transition-all"
+                title="Separate key parts for a closer look"
+              >
+                <i class="fa-solid fa-up-down-left-right"></i>
+                <span class="hidden sm:inline text-xs font-medium">Explode</span>
+              </button>
+              <div id="explodedViewDivider" class="hidden w-px h-5 bg-slate-800"></div>
               <button
                 onclick="toggleAutoRotate()"
                 id="btnAutoRotate"
@@ -420,7 +545,7 @@
               <h4
                 class="text-xs font-bold uppercase tracking-wider text-cyanGlow flex items-center gap-2"
               >
-                <i class="fa-solid fa-circle-info"></i> Definition & Role
+                <i class="fa-solid fa-circle-info"></i> Overview
               </h4>
               <p
                 id="modalDefinition"
@@ -428,6 +553,13 @@
               >
                 Detailed hardware definition goes here.
               </p>
+            </div>
+
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-cyanGlow flex items-center gap-2">
+                <i class="fa-solid fa-gears"></i> How It Works
+              </h4>
+              <p id="modalHowWorks" class="text-sm text-slate-300 leading-relaxed font-light"></p>
             </div>
 
             <!-- Main Functions -->
@@ -460,13 +592,36 @@
               </p>
             </div>
 
-            <!-- Important Parts & Features -->
             <div class="space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-cyanGlow flex items-center gap-2">
+                <i class="fa-solid fa-tags"></i> Category
+              </h4>
+              <div id="modalCategories" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <section
+              class="space-y-3 rounded-xl border border-slate-800 bg-navyBg/50 p-3"
+              aria-labelledby="manufacturerReferenceTitle"
+            >
               <h4
+                id="manufacturerReferenceTitle"
                 class="text-xs font-bold uppercase tracking-wider text-cyanGlow flex items-center gap-2"
               >
-                <i class="fa-solid fa-microchip"></i> Key Parts & Features
+                <i class="fa-solid fa-camera"></i> Manufacturer Reference
               </h4>
+              <div id="manufacturerReference" class="space-y-3"></div>
+            </section>
+
+            <!-- Important Parts & Features -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-3">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-cyanGlow flex items-center gap-2">
+                  <i class="fa-solid fa-microchip"></i> Key Parts
+                </h4>
+                <button id="keyPartsToggle" type="button" aria-pressed="false" onclick="toggleKeyParts()" class="px-3 py-1.5 rounded-lg bg-violet-500/15 border border-violet-400/40 text-violet-200 hover:bg-violet-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-300 text-xs font-semibold transition-colors">
+                  Key Parts
+                </button>
+              </div>
               <div id="modalFeatures" class="grid grid-cols-2 gap-2 text-xs">
                 <!-- Populated dynamically -->
               </div>
@@ -502,7 +657,8 @@
 
     <!-- Footer Section with Meet Our Team -->
     <footer
-      class="mt-auto bg-[#0B1220] border-t border-slate-800/80 pt-12 pb-8 px-4 sm:px-8 relative z-10"
+      id="museumFooter"
+      class="mt-auto w-full bg-[#0B1220] border-t border-slate-800/80 pt-8 pb-6 px-4 sm:px-8 relative z-10"
     >
       <div class="max-w-7xl mx-auto space-y-10">
         <!-- Footer Order 1: Website Name -->
@@ -526,7 +682,7 @@
         <hr class="border-slate-800/60 max-w-3xl mx-auto" />
 
         <!-- Footer Order 2: Meet Our Team Section (Exactly 5 Members) -->
-        <div class="space-y-6 text-center">
+        <div id="landing-team" class="space-y-6 text-center">
           <div class="space-y-1">
             <h3
               class="text-sm font-bold text-cyanGlow uppercase tracking-widest font-mono flex items-center justify-center gap-2"
@@ -611,6 +767,12 @@
       </div>
     </footer>
 
+    <button id="backToTop" class="back-to-top" type="button" aria-label="Back to top">
+      <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <script src="hardware-data.js"></script>
+    <script src="model-designs.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

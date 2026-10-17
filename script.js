@@ -313,14 +313,193 @@ const HARDWARE_DATA = [
   },
 ];
 
+const EXISTING_CATEGORY_MAP = {
+  "Internal Hardware": ["Processing", "Supporting Component"],
+  "Peripherals / Input": ["Input"],
+  "Output Devices": ["Output"],
+};
+const EXISTING_COMPONENT_CATEGORIES = {
+  "audio-card": ["Input", "Output", "Supporting Component"],
+  cpu: ["Processing"],
+  gpu: ["Processing", "Output"],
+  keyboard: ["Input"],
+  microphone: ["Input"],
+  monitor: ["Output"],
+  mouse: ["Input"],
+  printer: ["Output"],
+  projector: ["Output"],
+  scanner: ["Input"],
+  speakers: ["Output"],
+  webcam: ["Input"],
+};
+const LEGACY_COMPONENT_PARTS = {
+  "audio-card": [
+    { meshId: "circuit-board", name: "Circuit board", description: "Carries the audio circuitry and expansion connector." },
+    { meshId: "audio-connectors", name: "Audio jacks", description: "Connect audio input and output equipment." },
+    { meshId: "audio-shield", name: "Shield", description: "Covers sensitive circuitry to reduce electrical interference." },
+    { meshId: "contacts", name: "PCIe edge connector", description: "Connects the card to a compatible motherboard slot." },
+  ],
+  cpu: [
+    { meshId: "substrate", name: "Package substrate", description: "Supports the processor die and carries signals to the socket." },
+    { meshId: "heat-spreader", name: "Heat spreader", description: "Transfers heat from the processor die to a cooler." },
+    { meshId: "die", name: "Processor die", description: "Contains the processor's transistors and execution circuits." },
+    { meshId: "contacts", name: "Package contacts", description: "Connect the processor to its compatible socket." },
+  ],
+  gpu: [
+    { meshId: "circuit-board", name: "Graphics-card PCB", description: "Connects the GPU, memory, power circuitry, and connectors." },
+    { meshId: "gpu-chip", name: "GPU chip", description: "Performs graphics calculations and parallel workloads." },
+    { meshId: "vram", name: "VRAM", description: "Stores graphics data used by the GPU." },
+    { meshId: "heatsink", name: "Heatsink", description: "Transfers heat away from the GPU and memory." },
+    { meshId: "cooling-fans", name: "Cooling fans", description: "Move air through the heatsink to remove heat." },
+    { meshId: "power-connectors", name: "Power connectors", description: "Supply additional power from the PSU when needed." },
+    { meshId: "display-connectors", name: "Display connectors", description: "Send video signals to compatible displays." },
+  ],
+  keyboard: [
+    { meshId: "keyboard-base", name: "Keyboard base", description: "Supports the keys and internal switch assembly." },
+    { meshId: "keycaps", name: "Keycaps", description: "Provide the surfaces pressed by the typist." },
+    { meshId: "switches", name: "Key switches", description: "Register key presses and return each key after it is released." },
+    { meshId: "backlight", name: "Backlight layer", description: "Illuminates the keys on keyboards equipped with lighting." },
+  ],
+  microphone: [
+    { meshId: "mic-body", name: "Microphone body", description: "Houses the microphone electronics and controls." },
+    { meshId: "mic-capsule", name: "Microphone capsule", description: "Converts sound pressure into an electrical audio signal." },
+    { meshId: "mic-stand", name: "Stand", description: "Supports and positions the microphone." },
+  ],
+  monitor: [
+    { meshId: "monitor-panel", name: "Display panel", description: "Produces the visible image from video signals." },
+    { meshId: "monitor-bezel", name: "Bezel", description: "Protects and supports the panel edges." },
+    { meshId: "monitor-stand", name: "Stand", description: "Supports and positions the display." },
+    { meshId: "monitor-base", name: "Base", description: "Stabilizes the monitor on a desk." },
+  ],
+  mouse: [
+    { meshId: "mouse-shell", name: "Mouse shell", description: "Provides the outer body and hand-contact surfaces." },
+    { meshId: "scroll-wheel", name: "Scroll wheel", description: "Provides tactile scrolling input." },
+    { meshId: "optical-sensor", name: "Optical sensor", description: "Measures surface movement to move the pointer." },
+  ],
+  printer: [
+    { meshId: "printer-housing", name: "Printer housing", description: "Supports and protects the print mechanism." },
+    { meshId: "paper-tray", name: "Input paper tray", description: "Holds paper before printing." },
+    { meshId: "output-tray", name: "Output tray", description: "Supports printed pages as they leave the printer." },
+    { meshId: "control-panel", name: "Control panel", description: "Provides basic status and operating controls." },
+  ],
+  projector: [
+    { meshId: "projector-housing", name: "Projector housing", description: "Supports and protects the optical and electronic assemblies." },
+    { meshId: "projector-lens", name: "Projection lens", description: "Focuses and directs the projected image." },
+  ],
+  scanner: [
+    { meshId: "scanner-housing", name: "Scanner housing", description: "Supports the optical scanning assembly." },
+    { meshId: "scanner-glass", name: "Scan glass", description: "Provides a flat surface for documents." },
+    { meshId: "scanner-sensor", name: "Sensor bar", description: "Captures reflected light as the scan head moves." },
+  ],
+  speakers: [
+    { meshId: "speaker-cabinet", name: "Speaker cabinet", description: "Supports the drivers and helps shape their sound." },
+    { meshId: "woofer", name: "Woofer", description: "Reproduces lower and midrange sound frequencies." },
+    { meshId: "tweeter", name: "Tweeter", description: "Reproduces higher sound frequencies." },
+  ],
+  webcam: [
+    { meshId: "webcam-body", name: "Camera body", description: "Houses the webcam sensor and electronics." },
+    { meshId: "webcam-lens", name: "Lens", description: "Focuses light onto the image sensor." },
+    { meshId: "webcam-clip", name: "Monitor clip", description: "Attaches the webcam to a display." },
+  ],
+};
+const LEGACY_TECHNICAL_VIEWS = {
+  "audio-card": { ghostMeshIds: ["audio-shield"] },
+  cpu: { ghostMeshIds: ["heat-spreader", "substrate"] },
+  gpu: { ghostMeshIds: ["gpu-shroud", "heatsink", "cooling-fans"] },
+  keyboard: { ghostMeshIds: ["keycaps", "switches"] },
+  microphone: { ghostMeshIds: ["mic-body"] },
+  monitor: { ghostMeshIds: ["monitor-bezel"] },
+  mouse: { ghostMeshIds: ["mouse-shell"] },
+  printer: { ghostMeshIds: ["printer-housing"] },
+  projector: { ghostMeshIds: ["projector-housing"] },
+  scanner: { ghostMeshIds: ["scanner-housing"] },
+  speakers: { ghostMeshIds: ["speaker-cabinet"] },
+  webcam: { ghostMeshIds: ["webcam-body"] },
+};
+HARDWARE_DATA.forEach((item) => {
+  item.categories =
+    item.categories ||
+    EXISTING_COMPONENT_CATEGORIES[item.id] ||
+    EXISTING_CATEGORY_MAP[item.category] ||
+    ["Supporting Component"];
+  item.category = item.categories[0];
+  item.howWorks = item.howWorks || item.definition;
+  item.aliases = item.aliases || "";
+  item.parts =
+    item.parts ||
+    LEGACY_COMPONENT_PARTS[item.id] ||
+    item.features.map((name) => ({
+      name,
+      description: `${name} is a named feature of this component.`,
+      meshId: null,
+    }));
+  item.technicalView =
+    item.technicalView || LEGACY_TECHNICAL_VIEWS[item.id] || {};
+  item.visualReference = HARDWARE_VISUAL_REFERENCES[item.id] || null;
+  item.modelDisclaimer = item.visualReference
+    ? `${item.visualReference.conceptual ? "Conceptual study; reference context: " : "Procedural approximation guided by: "}${item.visualReference.model}.`
+    : "Simplified procedural study model; proportions and internal details vary by product.";
+});
+HARDWARE_DATA.push(...ADDITIONAL_HARDWARE_DATA);
+const ALTERNATE_HARDWARE_NAMES = {
+  "audio-card": ["Sound Card"],
+  cpu: ["CPU", "Processor"],
+  "flash-drive": ["USB Flash Drive"],
+  "graphics-card": ["Video Card"],
+  monitor: ["Display Monitor"],
+  "network-interface-card": ["Ethernet Card", "LAN Card"],
+};
+HARDWARE_DATA.forEach((item) => {
+  item.alternateNames = ALTERNATE_HARDWARE_NAMES[item.id] || [];
+});
+
 let currentCategory = "All";
 let currentLetter = "All";
 let searchQuery = "";
 let isModelDarkMode = true; // Scoped strictly to the 3D model canvas studio
 
 window.addEventListener("DOMContentLoaded", () => {
+  const landingPage = document.getElementById("landingPage");
+  const museumFooter = document.getElementById("museumFooter");
+  const backToTopButton = document.getElementById("backToTop");
+  const landingMenuToggle = document.getElementById("landingMenuToggle");
+  const landingNavLinks = document.getElementById("landingNavLinks");
+
+  landingPage.appendChild(museumFooter);
+  renderCategoryFilters();
   renderAlphabetFilter();
   renderHardwareCards();
+  initializeLandingModel();
+
+  landingMenuToggle.addEventListener("click", () => {
+    const isOpen = landingNavLinks.classList.toggle("is-open");
+    landingMenuToggle.setAttribute("aria-expanded", String(isOpen));
+    landingMenuToggle.setAttribute(
+      "aria-label",
+      isOpen ? "Close navigation menu" : "Open navigation menu",
+    );
+    landingMenuToggle.innerHTML = `<i class="fa-solid fa-${isOpen ? "xmark" : "bars"}" aria-hidden="true"></i>`;
+  });
+  landingNavLinks.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", closeLandingMenu);
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeLandingMenu();
+  });
+
+  const updateBackToTopVisibility = () => {
+    const isLandingVisible = !landingPage.classList.contains("hidden");
+    backToTopButton.classList.toggle(
+      "visible",
+      isLandingVisible && window.scrollY > 420,
+    );
+  };
+  window.addEventListener("scroll", updateBackToTopVisibility, {
+    passive: true,
+  });
+  backToTopButton.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 
   // Register Keyboard Shortcuts
   window.addEventListener("keydown", (e) => {
@@ -342,6 +521,271 @@ window.addEventListener("DOMContentLoaded", () => {
       if (e.target.id === "viewerModal") closeModal();
     });
 });
+
+let landingModelRenderer;
+let landingModelFrame = 0;
+let landingModelRenderFrameCallback;
+let landingModelScene;
+let landingModelCamera;
+let landingModelCarouselTimer = 0;
+let landingCarouselTransitionTimer = 0;
+let landingCarouselModels = [];
+let landingCarouselIndex = -1;
+const LANDING_CAROUSEL_INTERVAL_MS = 3000;
+const LANDING_CAROUSEL_MODEL_IDS = [
+  "cpu",
+  "graphics-card",
+  "motherboard",
+  "ram",
+  "nvme-ssd",
+  "power-supply-unit",
+  "heat-sink",
+];
+
+function initializeLandingModel() {
+  const container = document.getElementById("landingModelCanvas");
+  try {
+    landingModelRenderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+    });
+  } catch (error) {
+    console.error("Unable to initialize the landing-page 3D model.", error);
+    container.textContent = "3D preview is unavailable in this browser.";
+    return;
+  }
+
+  landingModelRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  landingModelRenderer.setClearColor(0x000000, 0);
+  container.appendChild(landingModelRenderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  landingModelScene = scene;
+  landingModelCamera = camera;
+
+  scene.add(new THREE.AmbientLight(0xffffff, 1.05));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2);
+  keyLight.position.set(3, 5, 4);
+  scene.add(keyLight);
+  const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.55);
+  fillLight.position.set(-4, 1, -2);
+  scene.add(fillLight);
+
+  landingCarouselModels = LANDING_CAROUSEL_MODEL_IDS.flatMap((id) => {
+    const item = HARDWARE_DATA.find((entry) => entry.id === id);
+    if (!item) {
+      console.error(`Landing carousel model "${id}" is missing from the catalog.`);
+      return [];
+    }
+    const model = createItemModel(item);
+    model.userData.landingModelId = id;
+    model.rotation.x = -0.08;
+    model.rotation.y = -0.55;
+    return [{ id, name: item.name, model }];
+  });
+
+  const resize = () => {
+    const { width, height } = container.getBoundingClientRect();
+    if (!width || !height) return;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    landingModelRenderer.setSize(width, height, false);
+    fitLandingCarouselModel(camera);
+    landingModelRenderer.render(scene, camera);
+  };
+  const landingModelResizeObserver = new ResizeObserver(resize);
+  landingModelResizeObserver.observe(container);
+  window.addEventListener("resize", resize, { passive: true });
+
+  landingCarouselModels.forEach(({ model }) => {
+    scene.add(model);
+    fitLandingCarouselModel(camera, model);
+    landingModelRenderer.compile(scene, camera);
+    landingModelRenderer.render(scene, camera);
+    scene.remove(model);
+  });
+  setLandingCarouselModel(0, false);
+  resize();
+
+  const shouldReduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  const renderFrame = () => {
+    if (landingPageIsHidden()) {
+      landingModelFrame = 0;
+      return;
+    }
+    const activeModel = landingCarouselModels[landingCarouselIndex]?.model;
+    if (!shouldReduceMotion && activeModel) activeModel.rotation.y += 0.002;
+    landingModelRenderer.render(scene, camera);
+    landingModelFrame = window.requestAnimationFrame(renderFrame);
+  };
+  landingModelRenderFrameCallback = renderFrame;
+  if (!shouldReduceMotion) {
+    landingModelFrame = window.requestAnimationFrame(renderFrame);
+  }
+  startLandingCarousel();
+
+  container
+    .closest(".landing-model-stage")
+    ?.querySelectorAll("[data-carousel-index]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        setLandingCarouselModel(Number(button.dataset.carouselIndex));
+        startLandingCarousel();
+      });
+    });
+}
+
+function fitLandingCarouselModel(
+  camera,
+  model = landingCarouselModels[landingCarouselIndex]?.model,
+) {
+  const container = document.getElementById("landingModelCanvas");
+  if (!model || !container) return;
+
+  const bounds = new THREE.Box3().setFromObject(model);
+  if (bounds.isEmpty()) return;
+  const center = bounds.getCenter(new THREE.Vector3());
+  model.position.sub(center);
+
+  const sphere = bounds.getBoundingSphere(new THREE.Sphere());
+  const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+  const horizontalFov =
+    2 * Math.atan(Math.tan(verticalFov / 2) * camera.aspect);
+  const limitingFov = Math.min(verticalFov, horizontalFov);
+  const distance = Math.max(2.8, (sphere.radius / Math.sin(limitingFov / 2)) * 1.12);
+  const viewDirection = new THREE.Vector3(3.1, 2.6, 3.4).normalize();
+  camera.position.copy(viewDirection.multiplyScalar(distance));
+  camera.lookAt(0, 0, 0);
+  camera.updateProjectionMatrix();
+}
+
+function setLandingCarouselModel(index, animate = true) {
+  if (!landingCarouselModels.length || !landingModelRenderer) return;
+  const nextIndex =
+    (index + landingCarouselModels.length) % landingCarouselModels.length;
+  if (nextIndex === landingCarouselIndex) return;
+  const container = document.getElementById("landingModelCanvas");
+  const scene = landingModelScene;
+  const camera = landingModelCamera;
+  const showModel = () => {
+    if (landingCarouselIndex >= 0) {
+      scene.remove(landingCarouselModels[landingCarouselIndex].model);
+    }
+    landingCarouselIndex = nextIndex;
+    scene.add(landingCarouselModels[landingCarouselIndex].model);
+    fitLandingCarouselModel(camera);
+
+    const current = landingCarouselModels[landingCarouselIndex];
+    const label = document.getElementById("landingCarouselLabel");
+    const caption = document.getElementById("landingCarouselCaption");
+    if (label) label.textContent = `${current.name.toUpperCase()} · 3D VIEW`;
+    if (caption) {
+      caption.textContent = `Explore hardware from every angle · ${current.name}`;
+    }
+    container
+      .closest(".landing-model-stage")
+      ?.querySelectorAll("[data-carousel-index]")
+      .forEach((button, buttonIndex) => {
+        const active = buttonIndex === landingCarouselIndex;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+    landingModelRenderer.render(scene, camera);
+    container.classList.remove("is-changing");
+  };
+
+  if (landingCarouselTransitionTimer) {
+    window.clearTimeout(landingCarouselTransitionTimer);
+    landingCarouselTransitionTimer = 0;
+  }
+  if (animate && landingCarouselIndex >= 0) {
+    container.classList.add("is-changing");
+    landingCarouselTransitionTimer = window.setTimeout(() => {
+      landingCarouselTransitionTimer = 0;
+      showModel();
+    }, 130);
+  } else {
+    showModel();
+  }
+}
+
+function startLandingCarousel() {
+  if (landingModelCarouselTimer) {
+    window.clearInterval(landingModelCarouselTimer);
+  }
+  landingModelCarouselTimer = window.setInterval(() => {
+    if (!landingPageIsHidden()) {
+      setLandingCarouselModel(landingCarouselIndex + 1);
+    }
+  }, LANDING_CAROUSEL_INTERVAL_MS);
+}
+
+function stopLandingCarousel() {
+  if (landingModelCarouselTimer) {
+    window.clearInterval(landingModelCarouselTimer);
+    landingModelCarouselTimer = 0;
+  }
+}
+
+function landingPageIsHidden() {
+  return document.getElementById("landingPage").classList.contains("hidden");
+}
+
+function stopLandingModelAnimation() {
+  if (landingModelFrame) {
+    window.cancelAnimationFrame(landingModelFrame);
+    landingModelFrame = 0;
+  }
+}
+
+function startLandingModelAnimation() {
+  if (
+    landingModelRenderer &&
+    landingModelRenderFrameCallback &&
+    !landingModelFrame &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    landingModelFrame = window.requestAnimationFrame(
+      landingModelRenderFrameCallback,
+    );
+  }
+}
+
+function closeLandingMenu() {
+  const menu = document.getElementById("landingNavLinks");
+  const toggle = document.getElementById("landingMenuToggle");
+  if (!menu || !toggle) return;
+  menu.classList.remove("is-open");
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-label", "Open navigation menu");
+  toggle.innerHTML = '<i class="fa-solid fa-bars" aria-hidden="true"></i>';
+}
+
+function enterMuseum() {
+  stopLandingModelAnimation();
+  stopLandingCarousel();
+  closeLandingMenu();
+  document.getElementById("landingPage").classList.add("hidden");
+  document.getElementById("backToTop").classList.remove("visible");
+  ["museumHeader", "catalog"].forEach((id) =>
+    document.getElementById(id).classList.remove("hidden"),
+  );
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function returnToLanding() {
+  closeModal();
+  ["museumHeader", "home", "catalog"].forEach((id) =>
+    document.getElementById(id).classList.add("hidden"),
+  );
+  document.getElementById("landingPage").classList.remove("hidden");
+  startLandingModelAnimation();
+  startLandingCarousel();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
 /**
  * 3D Viewer Studio Dark/White Theme Toggle (Scoped ONLY to the Model Viewport)
@@ -365,6 +809,607 @@ function toggleModelViewerTheme() {
   }
 }
 
+function getNamedPartNodes(meshId) {
+  const matches = [];
+  if (currentMeshGroup && meshId) {
+    currentMeshGroup.traverse((node) => {
+      if (node.name === meshId) matches.push(node);
+    });
+  }
+  return matches;
+}
+
+function createKeyPartsOverlay() {
+  const container = document.getElementById("webgl-container");
+  keyPartsAnnotationLayer = document.createElement("div");
+  keyPartsAnnotationLayer.id = "keyPartsAnnotations";
+  keyPartsAnnotationLayer.className =
+    "key-parts-annotations hidden absolute inset-0 z-[11] pointer-events-none";
+
+  keyPartsSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  keyPartsSvg.setAttribute("aria-hidden", "true");
+  keyPartsSvg.classList.add("key-parts-lines");
+  const labelLayer = document.createElement("div");
+  labelLayer.className = "key-parts-labels";
+  keyPartsAnnotationLayer.append(keyPartsSvg, labelLayer);
+  container.appendChild(keyPartsAnnotationLayer);
+}
+
+function renderKeyPartAnnotations(data) {
+  if (!keyPartsAnnotationLayer || !keyPartsSvg) return;
+  const labelLayer = keyPartsAnnotationLayer.querySelector(".key-parts-labels");
+  keyPartsSvg.replaceChildren();
+  labelLayer.replaceChildren();
+  keyPartAnnotations = [];
+  if (!currentModelReady || !currentMeshGroup) return;
+
+  (data.parts || []).forEach((part) => {
+    const nodes = getNamedPartNodes(part.meshId);
+    if (!nodes.length) return;
+
+    const targetMeshes = new Set();
+    nodes.forEach((node) => {
+      if (node.isMesh) targetMeshes.add(node);
+      node.traverse((child) => {
+        if (child.isMesh) targetMeshes.add(child);
+      });
+    });
+
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    line.classList.add("key-part-line");
+    const marker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    marker.setAttribute("r", "3.5");
+    marker.classList.add("key-part-marker");
+    keyPartsSvg.append(line, marker);
+
+    const label = document.createElement("span");
+    label.className = "key-part-label";
+    label.textContent = part.name;
+    label.title = part.description || part.name;
+    labelLayer.appendChild(label);
+    keyPartAnnotations.push({ nodes, targetMeshes, line, marker, label });
+  });
+  updateKeyPartAnnotations();
+}
+
+function getVisiblePartAnchor(annotation) {
+  if (!currentMeshGroup || !camera || !annotationRaycaster) return null;
+  const meshes = [...annotation.targetMeshes];
+  if (!meshes.length) return null;
+
+  const sampleMeshes =
+    meshes.length <= 12
+      ? meshes
+      : meshes.filter((_, index) => index % Math.ceil(meshes.length / 12) === 0);
+  const candidates = [];
+  sampleMeshes.forEach((mesh) => {
+    const bounds = new THREE.Box3().setFromObject(mesh);
+    if (bounds.isEmpty()) return;
+    const center = bounds.getCenter(new THREE.Vector3());
+    candidates.push(center);
+    if (meshes.length <= 12) {
+      const size = bounds.getSize(new THREE.Vector3());
+      const axes = [
+        ["x", size.x],
+        ["y", size.y],
+        ["z", size.z],
+      ]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 2);
+      axes.forEach(([axis, extent]) => {
+        const offset = extent * 0.34;
+        [-offset, offset].forEach((amount) => {
+          const point = center.clone();
+          point[axis] += amount;
+          candidates.push(point);
+        });
+      });
+    }
+  });
+
+  let projectedFallback = null;
+  for (const candidate of candidates) {
+    const projected = candidate.clone().project(camera);
+    if (
+      projected.z < -1 ||
+      projected.z > 1 ||
+      Math.abs(projected.x) > 1 ||
+      Math.abs(projected.y) > 1
+    ) {
+      continue;
+    }
+    if (!projectedFallback) projectedFallback = projected;
+
+    annotationRaycaster.setFromCamera(
+      new THREE.Vector2(projected.x, projected.y),
+      camera,
+    );
+    const hits = annotationRaycaster.intersectObjects(
+      currentMeshGroup.children,
+      true,
+    );
+    const visibleHit = hits.find((hit) =>
+      annotation.targetMeshes.has(hit.object),
+    );
+    const firstOpaqueHit = hits.find((hit) => {
+      const materials = Array.isArray(hit.object.material)
+        ? hit.object.material
+        : [hit.object.material];
+      return materials.some(
+        (material) => material && (!material.transparent || material.opacity >= 0.98),
+      );
+    });
+    if (
+      visibleHit &&
+      (!firstOpaqueHit ||
+        firstOpaqueHit.distance >= visibleHit.distance - 0.001 ||
+        annotation.targetMeshes.has(firstOpaqueHit.object))
+    ) {
+      return visibleHit.point.clone().project(camera);
+    }
+  }
+  return projectedFallback;
+}
+
+function updateKeyPartAnnotations() {
+  if (
+    !keyPartsActive ||
+    !keyPartsAnnotationLayer ||
+    !currentMeshGroup ||
+    !camera
+  ) {
+    return;
+  }
+
+  const bounds = keyPartsAnnotationLayer.getBoundingClientRect();
+  if (!bounds.width || !bounds.height) return;
+  keyPartsSvg.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
+  keyPartsSvg.setAttribute("width", String(bounds.width));
+  keyPartsSvg.setAttribute("height", String(bounds.height));
+  currentMeshGroup.updateWorldMatrix(true, true);
+  camera.updateMatrixWorld();
+
+  const visible = [];
+  keyPartAnnotations.forEach((annotation) => {
+    const anchor = getVisiblePartAnchor(annotation);
+    if (!anchor) {
+      annotation.label.style.display = "none";
+      annotation.line.style.display = "none";
+      annotation.marker.style.display = "none";
+      return;
+    }
+
+    const x = ((anchor.x + 1) / 2) * bounds.width;
+    const y = ((1 - anchor.y) / 2) * bounds.height;
+    annotation.label.style.display = "block";
+    annotation.label.style.left = x < bounds.width / 2 ? "6px" : "auto";
+    annotation.label.style.right =
+      x < bounds.width / 2 ? "auto" : "6px";
+    visible.push({ ...annotation, anchor: { x, y }, side: x < bounds.width / 2 ? "left" : "right" });
+  });
+
+  ["left", "right"].forEach((side) => {
+    const column = visible
+      .filter((item) => item.side === side)
+      .sort((a, b) => a.anchor.y - b.anchor.y);
+    if (!column.length) return;
+    const topLimit = Math.min(40, bounds.height * 0.12);
+    const bottomLimit = Math.max(topLimit + 1, bounds.height - 54);
+    const totalHeight = column.reduce(
+      (total, item) => total + item.label.offsetHeight,
+      0,
+    );
+    const gap = Math.max(
+      2,
+      Math.min(
+        6,
+        (bottomLimit - topLimit - totalHeight) /
+          Math.max(1, column.length - 1),
+      ),
+    );
+    const centers = [];
+
+    column.forEach((item, index) => {
+      const height = item.label.offsetHeight;
+      const halfHeight = height / 2;
+      const previous = column[index - 1];
+      const previousCenter = centers[index - 1];
+      const minimumCenter = index === 0
+        ? topLimit + halfHeight
+        : previousCenter +
+          previous.label.offsetHeight / 2 +
+          halfHeight +
+          gap;
+      centers.push(Math.max(item.anchor.y, minimumCenter));
+    });
+
+    const last = column.length - 1;
+    const bottomOverflow =
+      centers[last] + column[last].label.offsetHeight / 2 - bottomLimit;
+    if (bottomOverflow > 0) {
+      centers.forEach((center, index) => {
+        centers[index] = center - bottomOverflow;
+      });
+    }
+    const topOverflow =
+      topLimit - (centers[0] - column[0].label.offsetHeight / 2);
+    if (topOverflow > 0) {
+      centers.forEach((center, index) => {
+        centers[index] = center + topOverflow;
+      });
+    }
+    column.forEach((item, index) => {
+      item.label.style.top = `${centers[index]}px`;
+    });
+  });
+
+  visible.forEach((item) => {
+    const labelLeft =
+      item.side === "left"
+        ? 6
+        : bounds.width - item.label.offsetWidth - 6;
+    const labelCenterY = parseFloat(item.label.style.top);
+    const startX =
+      item.side === "left"
+        ? labelLeft + item.label.offsetWidth
+        : labelLeft;
+    const bendX = startX + (item.anchor.x - startX) * 0.55;
+    item.line.setAttribute(
+      "d",
+      `M ${startX} ${labelCenterY} L ${bendX} ${labelCenterY} L ${item.anchor.x} ${item.anchor.y}`,
+    );
+    item.line.style.display = "";
+    item.marker.setAttribute("cx", String(item.anchor.x));
+    item.marker.setAttribute("cy", String(item.anchor.y));
+    item.marker.style.display = "";
+  });
+}
+
+function setModelTechnicalView(active) {
+  if (!currentMeshGroup) return;
+
+  if (!active) {
+    technicalViewOriginals.forEach(({ node, visible, material }) => {
+      const currentMaterials = Array.isArray(node.material)
+        ? node.material
+        : [node.material];
+      const originalMaterials = Array.isArray(material) ? material : [material];
+      currentMaterials.forEach((currentMaterial) => {
+        if (!originalMaterials.includes(currentMaterial)) currentMaterial.dispose();
+      });
+      node.visible = visible;
+      node.material = material;
+    });
+    technicalViewOriginals = [];
+    technicalViewTransformOriginals.forEach(({ node, position, rotation }) => {
+      node.position.copy(position);
+      node.rotation.copy(rotation);
+    });
+    technicalViewTransformOriginals = [];
+    return;
+  }
+
+  if (technicalViewOriginals.length || !currentHardwareData) return;
+  const settings = currentHardwareData.technicalView || {};
+  const ghostIds = new Set(settings.ghostMeshIds || []);
+  const hiddenIds = new Set(settings.hideMeshIds || []);
+  if (!isExploded && !explosionTransition) {
+    (settings.moveMeshIds || []).forEach(({ meshId, offset, rotation }) => {
+      getNamedPartNodes(meshId).forEach((node) => {
+        technicalViewTransformOriginals.push({
+          node,
+          position: node.position.clone(),
+          rotation: node.rotation.clone(),
+        });
+        if (offset) {
+          node.position.add(new THREE.Vector3(...offset));
+        }
+        if (rotation) {
+          node.rotation.set(...rotation);
+        }
+      });
+    });
+  }
+  const ghostMeshes = new Set();
+  const hiddenMeshes = new Set();
+  const collectMeshes = (ids, target) => {
+    ids.forEach((meshId) => {
+      getNamedPartNodes(meshId).forEach((node) => {
+        if (node.isMesh) target.add(node);
+        node.traverse((child) => {
+          if (child.isMesh) target.add(child);
+        });
+      });
+    });
+  };
+  collectMeshes(ghostIds, ghostMeshes);
+  collectMeshes(hiddenIds, hiddenMeshes);
+
+  const targets = new Set([...ghostMeshes, ...hiddenMeshes]);
+  targets.forEach((node) => {
+    const originalMaterial = node.material;
+    technicalViewOriginals.push({
+      node,
+      visible: node.visible,
+      material: originalMaterial,
+    });
+    if (hiddenMeshes.has(node)) {
+      node.visible = false;
+      return;
+    }
+
+    const ghostMaterial = (material) => {
+      const clone = material.clone();
+      clone.transparent = true;
+      clone.opacity = Math.min(clone.opacity, 0.18);
+      clone.depthWrite = false;
+      clone.needsUpdate = true;
+      return clone;
+    };
+    node.material = Array.isArray(originalMaterial)
+      ? originalMaterial.map(ghostMaterial)
+      : ghostMaterial(originalMaterial);
+  });
+}
+
+function setKeyPartsActive(active) {
+  if (active && !keyPartsActive) {
+    keyPartsPreviousAutoRotate = autoRotate;
+    if (controls) controls.autoRotate = false;
+    if (currentModelReady) setModelTechnicalView(true);
+  } else if (!active && keyPartsActive) {
+    setModelTechnicalView(false);
+    if (keyPartsPreviousAutoRotate !== null) {
+      autoRotate = keyPartsPreviousAutoRotate;
+      if (controls) controls.autoRotate = autoRotate;
+    }
+    keyPartsPreviousAutoRotate = null;
+  }
+
+  keyPartsActive = active;
+  const button = document.getElementById("keyPartsToggle");
+  if (button) {
+    button.setAttribute("aria-pressed", String(active));
+    button.classList.toggle("bg-violet-500/30", active);
+    button.classList.toggle("border-violet-300", active);
+  }
+  keyPartsAnnotationLayer?.classList.toggle(
+    "hidden",
+    !active || !currentModelReady,
+  );
+  if (active && currentHardwareData) {
+    if (currentModelReady) {
+      setModelTechnicalView(true);
+      renderKeyPartAnnotations(currentHardwareData);
+    }
+  } else {
+    keyPartAnnotations = [];
+  }
+}
+
+function toggleKeyParts() {
+  setKeyPartsActive(!keyPartsActive);
+}
+
+function resetExplodedParts() {
+  explosionTransition = null;
+  explodedParts.forEach(({ node, position, quaternion, scale }) => {
+    node.position.copy(position);
+    node.quaternion.copy(quaternion);
+    node.scale.copy(scale);
+  });
+  explodedParts = [];
+  isExploded = false;
+  updateExplodedButton();
+  updateKeyPartAnnotations();
+}
+
+const EXPLOSION_ANCHORS_BY_ID = {
+  "audio-card": "circuit-board",
+  cpu: "substrate",
+  gpu: "circuit-board",
+  keyboard: "keyboard-base",
+  microphone: "mic-body",
+  monitor: "monitor-bezel",
+  mouse: "mouse-shell",
+  printer: "printer-housing",
+  projector: "projector-housing",
+  scanner: "scanner-housing",
+  speakers: "speaker-cabinet",
+  webcam: "webcam-body",
+  "graphics-card": "circuit-board",
+  motherboard: "circuit-board",
+  "memory-module": "circuit-board",
+  ram: "circuit-board",
+  "nvme-ssd": "circuit-board",
+  "cooling-fan": "frame",
+  "heat-sink": "base",
+};
+
+const EXPLOSION_ANCHORS_BY_PROFILE = {
+  chip: "package",
+  board: "circuit-board",
+  card: "circuit-board",
+  motherboard: "circuit-board",
+  memory: "circuit-board",
+  nvme: "circuit-board",
+  fan: "frame",
+  case: "panels",
+  hdd: "platters",
+  optical: "enclosure",
+  power: "enclosure",
+  heatsink: "base",
+  mouse: "mouse-shell",
+  printer: "enclosure",
+  inkjetPrinter: "enclosure",
+  laserPrinter: "enclosure",
+  scanner: "enclosure",
+  display: "panel",
+  camera: "enclosure",
+  network: "enclosure",
+  controller: "enclosure",
+  audio: "enclosure",
+  ups: "enclosure",
+  switch: "enclosure",
+  socket: "housing",
+  port: "housing",
+  usb: "housing",
+  battery: "cell",
+  thermal: "applicator",
+  storageCard: "enclosure",
+};
+
+const EXPLOSION_DURATION_MS = 760;
+
+function updateExplodedButton() {
+  const button = document.getElementById("explodedViewToggle");
+  if (!button) return;
+  button.innerHTML = isExploded
+    ? '<i class="fa-solid fa-arrows-to-circle"></i><span class="hidden sm:inline text-xs font-medium">Reassemble</span>'
+    : '<i class="fa-solid fa-up-down-left-right"></i><span class="hidden sm:inline text-xs font-medium">Explode</span>';
+  button.setAttribute("aria-pressed", String(isExploded));
+}
+
+function getExplodablePartGroups() {
+  if (!currentMeshGroup || !currentHardwareData) return [];
+
+  const declaredParts = (currentHardwareData.parts || []).filter(
+    (part) => part.meshId,
+  );
+  const declaredNodes = new Set(
+    declaredParts.flatMap((part) => getNamedPartNodes(part.meshId)),
+  );
+  return declaredParts
+    .map((part) => {
+      const nodes = getNamedPartNodes(part.meshId).filter((node) => {
+        let parent = node.parent;
+        while (parent && parent !== currentMeshGroup) {
+          if (declaredNodes.has(parent)) return false;
+          parent = parent.parent;
+        }
+        return true;
+      });
+      return { meshId: part.meshId, nodes };
+    })
+    .filter((part) => part.nodes.length);
+}
+
+function createExplodedPartTransforms() {
+  const groups = getExplodablePartGroups();
+  if (!groups.length || !currentMeshGroup) return [];
+
+  currentMeshGroup.updateWorldMatrix(true, true);
+  const modelBounds = new THREE.Box3().setFromObject(currentMeshGroup);
+  const modelSize = modelBounds.getSize(new THREE.Vector3());
+  const modelExtent = Math.max(modelSize.x, modelSize.y, modelSize.z);
+  const modelCenter = currentMeshGroup.worldToLocal(
+    modelBounds.getCenter(new THREE.Vector3()),
+  );
+  const anchorMeshId =
+    EXPLOSION_ANCHORS_BY_ID[currentHardwareData.id] ||
+    EXPLOSION_ANCHORS_BY_PROFILE[currentHardwareData.modelProfile] ||
+    groups
+      .map((part) => {
+        const bounds = new THREE.Box3();
+        part.nodes.forEach((node) => bounds.expandByObject(node));
+        const size = bounds.getSize(new THREE.Vector3());
+        return { meshId: part.meshId, volume: size.x * size.y * size.z };
+      })
+      .sort((a, b) => b.volume - a.volume)[0]?.meshId;
+  const profileKey = currentHardwareData.modelProfile || currentHardwareData.id;
+  const profileHash = [...profileKey].reduce(
+    (value, character) => value + character.charCodeAt(0),
+    0,
+  );
+  const displacement = Math.max(0.12, Math.min(0.42, modelExtent * 0.13));
+  const transforms = [];
+
+  groups.forEach((part) => {
+    const bounds = new THREE.Box3();
+    part.nodes.forEach((node) => bounds.expandByObject(node));
+    const partCenter = currentMeshGroup.worldToLocal(
+      bounds.getCenter(new THREE.Vector3()),
+    );
+    const direction = partCenter.sub(modelCenter);
+    if (direction.lengthSq() < modelExtent * modelExtent * 0.0004) {
+      const partHash = [...part.meshId].reduce(
+        (value, character) => value + character.charCodeAt(0),
+        profileHash,
+      );
+      const angle = partHash * 2.399963229728653;
+      direction.set(
+        Math.cos(angle),
+        ((partHash % 3) - 1) * 0.28,
+        Math.sin(angle),
+      );
+    }
+    direction.normalize();
+    const worldDirection = direction
+      .clone()
+      .transformDirection(currentMeshGroup.matrixWorld);
+    const isAnchor = part.meshId === anchorMeshId;
+
+    part.nodes.forEach((node) => {
+      const position = node.position.clone();
+      const quaternion = node.quaternion.clone();
+      const scale = node.scale.clone();
+      let explodedPosition = position.clone();
+      if (!isAnchor && node.parent) {
+        const worldPosition = node.getWorldPosition(new THREE.Vector3());
+        const localStart = node.parent.worldToLocal(worldPosition.clone());
+        const localEnd = node.parent.worldToLocal(
+          worldPosition.clone().addScaledVector(worldDirection, displacement),
+        );
+        explodedPosition.add(localEnd.sub(localStart));
+      }
+      transforms.push({
+        node,
+        position,
+        quaternion,
+        scale,
+        explodedPosition,
+      });
+    });
+  });
+  return transforms;
+}
+
+function toggleExplodedView() {
+  if (!currentModelReady || !currentMeshGroup || !currentHardwareData) return;
+
+  const targetExploded = !isExploded;
+  if (targetExploded && keyPartsActive) {
+    setModelTechnicalView(false);
+  }
+
+  if (!explodedParts.length) {
+    explodedParts = createExplodedPartTransforms();
+  }
+  if (!explodedParts.length) return;
+
+  isExploded = targetExploded;
+  explosionTransition = {
+    startedAt: performance.now(),
+    targetExploded,
+    parts: explodedParts.map((part) => ({
+      ...part,
+      fromPosition: part.node.position.clone(),
+      fromQuaternion: part.node.quaternion.clone(),
+      fromScale: part.node.scale.clone(),
+      toPosition: targetExploded
+        ? part.explodedPosition.clone()
+        : part.position.clone(),
+      toQuaternion: part.quaternion.clone(),
+      toScale: part.scale.clone(),
+    })),
+  };
+  if (targetExploded && keyPartsActive) {
+    setModelTechnicalView(true);
+  }
+  updateExplodedButton();
+  updateKeyPartAnnotations();
+}
+
 /**
  * Render hardware grid cards
  */
@@ -374,26 +1419,23 @@ function renderHardwareCards() {
   const noResultsTitle = document.getElementById("noResultsTitle");
   const home = document.getElementById("home");
   grid.innerHTML = "";
-  home.classList.toggle("hidden", searchQuery.length > 0);
+  home.classList.add("hidden");
 
+  const query = searchQuery.trim().toLowerCase();
   const filtered = HARDWARE_DATA.filter((item) => {
     const matchesCat =
-      currentCategory === "All" || item.category === currentCategory;
+      currentCategory === "All" || item.categories.includes(currentCategory);
     const matchesLetter =
       currentLetter === "All" ||
-      item.name.toLocaleUpperCase().startsWith(currentLetter);
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.definition.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.shortDesc.toLowerCase().includes(searchQuery.toLowerCase());
+      item.name.toUpperCase().startsWith(currentLetter);
+    const matchesSearch = item.name.toLowerCase().includes(query);
     return matchesCat && matchesLetter && matchesSearch;
   });
 
   if (filtered.length === 0) {
     noResults.classList.remove("hidden");
     if (searchQuery.length > 0) {
-      noResultsTitle.innerText = "No results found.";
+      noResultsTitle.innerText = "No components found.";
     } else if (currentLetter !== "All") {
       noResultsTitle.innerText = "No devices found for this letter";
     } else {
@@ -405,14 +1447,23 @@ function renderHardwareCards() {
       const card = document.createElement("div");
       card.className =
         "glass-card rounded-2xl p-5 flex flex-col justify-between group cursor-pointer relative overflow-hidden";
+      card.setAttribute("role", "button");
+      card.tabIndex = 0;
+      card.setAttribute("aria-label", `Inspect ${item.name}`);
       card.onclick = () => openModal(item.id);
+      card.onkeydown = (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openModal(item.id);
+        }
+      };
 
       card.innerHTML = `
                   <!-- Card Header Badge & Icon -->
                   <div>
                       <div class="flex items-center justify-between mb-4">
-                          <span class="text-[11px] font-bold tracking-wide uppercase px-2.5 py-1 rounded-lg bg-cyanGlow/10 text-cyanGlow border border-cyanGlow/30">
-                              ${item.category}
+                          <span class="text-[11px] font-bold tracking-wide uppercase px-2.5 py-1 rounded-lg bg-cyanGlow/10 text-cyanLight border border-cyanGlow/30">
+                              ${item.categories.join(" · ")}
                           </span>
                           <div class="w-10 h-10 rounded-xl bg-navyBg border border-slate-700/80 flex items-center justify-center text-cyanGlow group-hover:scale-110 group-hover:border-cyanGlow transition-all">
                               <i class="fa-solid ${item.icon} text-lg"></i>
@@ -420,7 +1471,7 @@ function renderHardwareCards() {
                       </div>
 
                       <!-- Hardware Title -->
-                      <h3 class="text-lg font-bold text-white group-hover:text-cyanGlow transition-colors mb-2">
+                      <h3 class="text-lg font-bold text-white group-hover:text-cyanLight transition-colors mb-2">
                           ${item.name}
                       </h3>
 
@@ -435,7 +1486,7 @@ function renderHardwareCards() {
                       <span class="text-xs text-slate-400 font-mono flex items-center gap-1.5">
                           <i class="fa-solid fa-cube text-cyanGlow"></i> 3D Inspector
                       </span>
-                      <button class="px-3 py-1.5 rounded-lg bg-cyanGlow/10 text-cyanGlow border border-cyanGlow/30 text-xs font-semibold group-hover:bg-cyanGlow group-hover:text-slate-950 transition-all flex items-center gap-1.5">
+                      <button type="button" class="px-3 py-1.5 rounded-lg bg-cyanDark/15 text-cyanLight border border-cyanGlow/30 text-xs font-semibold group-hover:bg-cyanDark group-hover:text-white transition-all flex items-center gap-1.5">
                           <span>Inspect</span>
                           <i class="fa-solid fa-arrow-right text-[10px]"></i>
                       </button>
@@ -446,20 +1497,41 @@ function renderHardwareCards() {
   }
 }
 
+function renderCategoryFilters() {
+  const container = document.getElementById("categoryFilter");
+  const categories = ["All", ...HARDWARE_CATEGORIES];
+  container.innerHTML = "";
+  categories.forEach((category) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.category = category;
+    button.className = "filter-btn whitespace-nowrap rounded-xl border px-4 py-2 transition-all";
+    button.innerText =
+      category === "All"
+        ? `All Components (${HARDWARE_DATA.length})`
+        : category;
+    button.addEventListener("click", () => filterCategory(category));
+    container.appendChild(button);
+  });
+  updateCategoryFilterStates();
+}
+
+function updateCategoryFilterStates() {
+  document.querySelectorAll(".filter-btn").forEach((button) => {
+    const selected = button.dataset.category === currentCategory;
+    button.className = selected
+      ? "filter-btn active-filter whitespace-nowrap rounded-xl border border-cyanGlow bg-cyanDark px-4 py-2 font-bold text-white transition-all"
+      : "filter-btn whitespace-nowrap rounded-xl border border-slate-800 bg-cardBg px-4 py-2 text-slate-300 hover:border-cyanGlow/50 transition-all";
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
 /**
  * Category Filter handling
  */
 function filterCategory(cat) {
   currentCategory = cat;
-  document.querySelectorAll(".filter-btn").forEach((btn) => {
-    if (btn.dataset.category === cat) {
-      btn.className =
-        "filter-btn active-filter px-4 py-2 rounded-xl border border-cyanGlow bg-cyanGlow text-slate-950 font-bold shadow-cyanGlow whitespace-nowrap transition-all";
-    } else {
-      btn.className =
-        "filter-btn px-4 py-2 rounded-xl border border-slate-800 bg-cardBg hover:border-cyanGlow/50 text-slate-300 whitespace-nowrap transition-all";
-    }
-  });
+  updateCategoryFilterStates();
   renderHardwareCards();
 }
 
@@ -523,15 +1595,29 @@ function resetFilters() {
  */
 let scene, camera, renderer, controls;
 let currentMeshGroup = null;
+let currentModelBaseRotation = new THREE.Euler();
+let currentModelReady = false;
 let autoRotate = true;
 let isWireframe = false;
 let animationFrameId = null;
 let currentHardwareId = null;
 let animatedElements = [];
+let currentHardwareData = null;
+let explodedParts = [];
+let isExploded = false;
+let explosionTransition = null;
+let keyPartsActive = false;
+let keyPartsPreviousAutoRotate = null;
+let technicalViewOriginals = [];
+let technicalViewTransformOriginals = [];
+let keyPartsAnnotationLayer = null;
+let keyPartsSvg = null;
+let keyPartAnnotations = [];
+let annotationRaycaster = null;
 
 // Lighting System References
-let ambientLight, hemisphereLight, dirLight, cyanRimLight, fillLight;
-let gridHelper, shadowPlane, themeTransitionFrame = null;
+let ambientLight, hemisphereLight, dirLight, rimLight, fillLight;
+let shadowPlane, themeTransitionFrame = null;
 
 function initThreeJS() {
   const container = document.getElementById("webgl-container");
@@ -539,6 +1625,7 @@ function initThreeJS() {
 
   // 1. Create Scene & Camera
   scene = new THREE.Scene();
+  scene.background = null;
 
   camera = new THREE.PerspectiveCamera(
     45,
@@ -551,35 +1638,39 @@ function initThreeJS() {
   // 2. WebGL Renderer
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(container.clientWidth, container.clientHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
+  annotationRaycaster = new THREE.Raycaster();
+  createKeyPartsOverlay();
 
   // 3. Orbit Controls
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
-  controls.autoRotate = autoRotate;
+  controls.autoRotate = keyPartsActive ? false : autoRotate;
   controls.autoRotateSpeed = 2.0;
   controls.minDistance = 1;
   controls.maxDistance = 15;
+  controls.addEventListener("change", updateKeyPartAnnotations);
 
   // 4. Studio lighting setup
   ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
   scene.add(ambientLight);
 
-  hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 0.55);
+  hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x303030, 0.55);
   scene.add(hemisphereLight);
 
   dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
   dirLight.position.set(5, 8, 5);
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = 2048;
-  dirLight.shadow.mapSize.height = 2048;
+  const shadowMapSize = container.clientWidth < 800 ? 1024 : 2048;
+  dirLight.shadow.mapSize.width = shadowMapSize;
+  dirLight.shadow.mapSize.height = shadowMapSize;
   dirLight.shadow.camera.left = -10;
   dirLight.shadow.camera.right = 10;
   dirLight.shadow.camera.top = 10;
@@ -590,11 +1681,11 @@ function initThreeJS() {
   dirLight.shadow.radius = 4;
   scene.add(dirLight);
 
-  cyanRimLight = new THREE.PointLight(0x06b6d4, 2, 12);
-  cyanRimLight.position.set(-4, 3, -3);
-  scene.add(cyanRimLight);
+  rimLight = new THREE.PointLight(0xffffff, 2, 12);
+  rimLight.position.set(-4, 3, -3);
+  scene.add(rimLight);
 
-  fillLight = new THREE.PointLight(0x67e8f9, 1, 10);
+  fillLight = new THREE.PointLight(0xf7f5f0, 1, 10);
   fillLight.position.set(3, -2, 3);
   scene.add(fillLight);
 
@@ -606,10 +1697,6 @@ function initThreeJS() {
   shadowPlane.receiveShadow = true;
   scene.add(shadowPlane);
 
-  gridHelper = new THREE.GridHelper(15, 20, 0x06b6d4, 0x334155);
-  gridHelper.position.y = -1.2;
-  scene.add(gridHelper);
-
   update3DStudioTheme(isModelDarkMode);
 
   window.addEventListener("resize", onWindowResize);
@@ -618,21 +1705,6 @@ function initThreeJS() {
 /**
  * Update ONLY the 3D Studio Canvas Colors & Lights
  */
-function getMaterialThemeColor(color, darkMode) {
-  const hsl = {};
-  color.getHSL(hsl);
-  if (darkMode && hsl.l < 0.18) {
-    hsl.l = 0.12;
-  } else if (!darkMode && hsl.l < 0.18) {
-    hsl.l = 0.18;
-  } else if (!darkMode && hsl.l < 0.35) {
-    hsl.l = 0.28;
-  } else if (!darkMode && hsl.l > 0.84) {
-    hsl.l = 0.72;
-  }
-  return new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l);
-}
-
 function update3DStudioTheme(darkMode, animate = false) {
   if (!scene) return;
 
@@ -643,7 +1715,8 @@ function update3DStudioTheme(darkMode, animate = false) {
 
   const target = darkMode
     ? {
-        background: new THREE.Color(0x0b1220),
+        glow: new THREE.Color(0x23334c),
+        edge: new THREE.Color(0x080d17),
         ambient: 0.65,
         hemisphere: 0.55,
         directional: 1.8,
@@ -652,7 +1725,8 @@ function update3DStudioTheme(darkMode, animate = false) {
         shadow: 0.22,
       }
     : {
-        background: new THREE.Color(0xf1f5f9),
+        glow: new THREE.Color(0xffffff),
+        edge: new THREE.Color(0xd7e0eb),
         ambient: 0.85,
         hemisphere: 0.8,
         directional: 1.8,
@@ -661,74 +1735,32 @@ function update3DStudioTheme(darkMode, animate = false) {
         shadow: 0.12,
       };
 
-  const materialTargets = [];
-  if (currentMeshGroup) {
-    const seenMaterials = new Set();
-    currentMeshGroup.traverse((node) => {
-      if (!node.isMesh || !node.material) return;
-      const materials = Array.isArray(node.material)
-        ? node.material
-        : [node.material];
-      materials.forEach((material) => {
-        if (seenMaterials.has(material) || !material.color) return;
-        seenMaterials.add(material);
-        if (!material.userData.studioBaseColor) {
-          material.userData.studioBaseColor = material.color.clone();
-          material.userData.studioBaseRoughness = Number.isFinite(
-            material.roughness,
-          )
-            ? material.roughness
-            : 0.5;
-          material.userData.studioDarkColor = getMaterialThemeColor(
-            material.color,
-            true,
-          );
-          material.userData.studioLightColor = getMaterialThemeColor(
-            material.color,
-            false,
-          );
-        }
-        materialTargets.push({
-          material,
-          color: darkMode
-            ? material.userData.studioDarkColor
-            : material.userData.studioLightColor,
-          roughness: Number.isFinite(material.roughness)
-            ? Math.max(
-                darkMode ? 0.2 : 0.28,
-                material.userData.studioBaseRoughness,
-              )
-            : null,
-        });
-      });
-    });
-  }
-
+  const container = document.getElementById("webgl-container");
+  const readStudioColor = (property, fallback) => {
+    const value = getComputedStyle(container).getPropertyValue(property).trim();
+    return value ? new THREE.Color(value) : fallback.clone();
+  };
   const from = {
-    background: scene.background
-      ? scene.background.clone()
-      : target.background.clone(),
+    glow: readStudioColor("--studio-glow", target.glow),
+    edge: readStudioColor("--studio-edge", target.edge),
     ambient: ambientLight ? ambientLight.intensity : target.ambient,
     hemisphere: hemisphereLight
       ? hemisphereLight.intensity
       : target.hemisphere,
     directional: dirLight ? dirLight.intensity : target.directional,
-    rim: cyanRimLight ? cyanRimLight.intensity : target.rim,
+    rim: rimLight ? rimLight.intensity : target.rim,
     fill: fillLight ? fillLight.intensity : target.fill,
     shadow: shadowPlane ? shadowPlane.material.opacity : target.shadow,
   };
-  const materialStarts = materialTargets.map(({ material }) => ({
-    color: material.color.clone(),
-    roughness: Number.isFinite(material.roughness)
-      ? material.roughness
-      : material.userData.studioBaseRoughness,
-  }));
-
   const apply = (progress) => {
-    if (!scene.background) {
-      scene.background = from.background.clone();
-    }
-    scene.background.copy(from.background).lerp(target.background, progress);
+    container.style.setProperty(
+      "--studio-glow",
+      from.glow.clone().lerp(target.glow, progress).getStyle(),
+    );
+    container.style.setProperty(
+      "--studio-edge",
+      from.edge.clone().lerp(target.edge, progress).getStyle(),
+    );
     if (ambientLight) {
       ambientLight.intensity =
         from.ambient + (target.ambient - from.ambient) * progress;
@@ -741,8 +1773,8 @@ function update3DStudioTheme(darkMode, animate = false) {
       dirLight.intensity =
         from.directional + (target.directional - from.directional) * progress;
     }
-    if (cyanRimLight) {
-      cyanRimLight.intensity = from.rim + (target.rim - from.rim) * progress;
+    if (rimLight) {
+      rimLight.intensity = from.rim + (target.rim - from.rim) * progress;
     }
     if (fillLight) {
       fillLight.intensity = from.fill + (target.fill - from.fill) * progress;
@@ -751,14 +1783,6 @@ function update3DStudioTheme(darkMode, animate = false) {
       shadowPlane.material.opacity =
         from.shadow + (target.shadow - from.shadow) * progress;
     }
-    materialTargets.forEach(({ material, color, roughness }, index) => {
-      material.color.copy(materialStarts[index].color).lerp(color, progress);
-      if (roughness !== null) {
-        material.roughness =
-          materialStarts[index].roughness +
-          (roughness - materialStarts[index].roughness) * progress;
-      }
-    });
   };
 
   if (
@@ -790,6 +1814,7 @@ function onWindowResize() {
   camera.aspect = container.clientWidth / container.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(container.clientWidth, container.clientHeight);
+  updateKeyPartAnnotations();
 }
 
 function startAnimationLoop() {
@@ -797,13 +1822,43 @@ function startAnimationLoop() {
 
   function animate() {
     animationFrameId = requestAnimationFrame(animate);
+    updateExplosionTransition(performance.now());
     if (controls) controls.update();
-    animatedElements.forEach((anim) => anim());
+    if (!keyPartsActive) animatedElements.forEach((anim) => anim());
     if (renderer && scene && camera) {
       renderer.render(scene, camera);
     }
   }
   animate();
+}
+
+function updateExplosionTransition(now) {
+  if (!explosionTransition) return;
+
+  const transition = explosionTransition;
+  const progress = Math.min(
+    (now - transition.startedAt) / EXPLOSION_DURATION_MS,
+    1,
+  );
+  const eased = progress * progress * (3 - 2 * progress);
+  transition.parts.forEach((part) => {
+    part.node.position.lerpVectors(part.fromPosition, part.toPosition, eased);
+    part.node.quaternion.slerpQuaternions(
+      part.fromQuaternion,
+      part.toQuaternion,
+      eased,
+    );
+    part.node.scale.lerpVectors(part.fromScale, part.toScale, eased);
+  });
+  updateKeyPartAnnotations();
+
+  if (progress < 1) return;
+  explosionTransition = null;
+  if (!isExploded && keyPartsActive) {
+    setModelTechnicalView(false);
+    setModelTechnicalView(true);
+  }
+  updateKeyPartAnnotations();
 }
 
 /**
@@ -837,7 +1892,6 @@ function fitModelToCamera(object) {
   const fittedBox = new THREE.Box3().setFromObject(object);
   const groundY = fittedBox.min.y - 0.04;
   if (shadowPlane) shadowPlane.position.y = groundY;
-  if (gridHelper) gridHelper.position.y = groundY + 0.01;
 }
 
 /**
@@ -886,926 +1940,12 @@ function loadHardwareModel(item, callback) {
           `Failed to load external GLTF for ${item.name}, rendering high-detail procedural model instead.`,
           error,
         );
-        callback(createProceduralHardwareModel(item.id));
+        callback(createItemModel(item));
       },
     );
   } else {
-    callback(createProceduralHardwareModel(item.id));
+    callback(createItemModel(item));
   }
-}
-
-/**
- * HIGH-DETAIL PROCEDURAL HARDWARE GEOMETRY GENERATORS
- */
-function createProceduralHardwareModel(id) {
-  const group = new THREE.Group();
-
-  const pcbMat = new THREE.MeshStandardMaterial({
-    color: 0x060a12,
-    roughness: 0.42,
-    metalness: 0.65,
-  });
-  const whiteBodyMat = new THREE.MeshStandardMaterial({
-    color: 0x1e293b,
-    roughness: 0.3,
-    metalness: 0.35,
-  });
-  const darkMetalMat = new THREE.MeshStandardMaterial({
-    color: 0x060a12,
-    roughness: 0.32,
-    metalness: 0.8,
-  });
-  const mouseMat = new THREE.MeshStandardMaterial({
-    color: 0x0b1220,
-    roughness: 0.36,
-    metalness: 0.2,
-  });
-  const silverMetalMat = new THREE.MeshStandardMaterial({
-    color: 0x334155,
-    roughness: 0.26,
-    metalness: 0.85,
-  });
-  const cyanGlowMat = new THREE.MeshStandardMaterial({
-    color: 0x06b6d4,
-    emissive: 0x06b6d4,
-    emissiveIntensity: 1,
-    roughness: 0.24,
-    metalness: 0.3,
-  });
-  const goldMat = new THREE.MeshStandardMaterial({
-    color: 0x0284c7,
-    emissive: 0x06b6d4,
-    emissiveIntensity: 0.2,
-    metalness: 0.85,
-    roughness: 0.22,
-  });
-
-  switch (id) {
-    case "mouse": {
-      // ---------- Shape definition (front of the mouse points toward +Z) ----------
-      const LEN = 1.15; // half-length
-      const GAP = 0.07; // half-width of the scroll-wheel channel
-      const ROWS = 96,
-        TOP_ROWS = 40;
-      const THETA_MAX = (TOP_ROWS / ROWS) * Math.PI; // how far buttons wrap down the sides
-      const CORE_K = 0.975; // inner dark core scale
-
-      const widthAt = (t) => 0.64 * (1 - 0.22 * t); // wide palm, narrower front
-      const heightAt = (t) => 0.7 * (1 - 0.45 * Math.pow(t, 1.4)); // hump toward the back
-
-      // Deforms a unit sphere into a mouse-shaped body (flat underside, humped back)
-      const shape = (geo, opts = {}) => {
-        const { k = 1, side = 0, lift = 0 } = opts;
-        const p = geo.attributes.position;
-        for (let i = 0; i < p.count; i++) {
-          const xo = p.getX(i),
-            yo = p.getY(i),
-            zo = p.getZ(i);
-          const t = (zo + 1) / 2;
-          let x = xo * widthAt(t);
-          let y = yo * heightAt(t) * (yo > 0 ? 1 : 0.05);
-          const z = zo * LEN;
-          if (side !== 0) {
-            // Push each button away from the centre line to open the wheel channel
-            const W = widthAt(t) * Math.sqrt(Math.max(0, 1 - zo * zo));
-            const g = Math.min(GAP, W * 0.5);
-            const r = W > 0 ? Math.min(1, Math.abs(x) / W) : 1;
-            x = side * (Math.abs(x) + g * (1 - r) * (1 - r));
-            y += lift;
-          }
-          p.setXYZ(i, x * k, y * k, z * k);
-        }
-        geo.computeVertexNormals();
-        return geo;
-      };
-
-      // Height / tilt of the top surface along the centre line (used to seat parts)
-      const surfaceY = (zw, k = 1) => {
-        const zo = zw / (LEN * k);
-        if (Math.abs(zo) >= 1) return 0;
-        return k * Math.sqrt(1 - zo * zo) * heightAt((zo + 1) / 2);
-      };
-      const surfaceNormal = (zw, k = 1) => {
-        const d = 0.02;
-        const slope =
-          (surfaceY(zw + d, k) - surfaceY(zw - d, k)) / (2 * d);
-        return new THREE.Vector3(0, 1, -slope).normalize();
-      };
-
-      // ---------- Materials ----------
-      const shellMat = new THREE.MeshPhysicalMaterial({
-        color: 0x64748b,
-        roughness: 0.38,
-        metalness: 0.05,
-        clearcoat: 0.7,
-        clearcoatRoughness: 0.25,
-      });
-      const buttonMat = new THREE.MeshPhysicalMaterial({
-        color: 0x7a8ba6,
-        roughness: 0.28,
-        metalness: 0.05,
-        clearcoat: 0.9,
-        clearcoatRoughness: 0.15,
-      });
-      const coreMat = new THREE.MeshStandardMaterial({
-        color: 0x0a0e15,
-        roughness: 0.6,
-        metalness: 0.3,
-      });
-      const rubberMat = new THREE.MeshStandardMaterial({
-        color: 0x10141b,
-        roughness: 0.9,
-        metalness: 0.0,
-      });
-      const ridgeMat = new THREE.MeshStandardMaterial({
-        color: 0x2f3a4d,
-        roughness: 0.8,
-        metalness: 0.1,
-      });
-      const thumbMat = new THREE.MeshStandardMaterial({
-        color: 0x334155,
-        roughness: 0.4,
-        metalness: 0.2,
-      });
-      const cableMat = new THREE.MeshStandardMaterial({
-        color: 0x1e2633,
-        roughness: 0.7,
-        metalness: 0.1,
-      });
-      const padMat = new THREE.MeshStandardMaterial({
-        color: 0xe2e8f0,
-        roughness: 0.5,
-        metalness: 0.0,
-      });
-      const sensorMat = new THREE.MeshStandardMaterial({
-        color: 0x06b6d4,
-        emissive: 0x0284c7,
-        emissiveIntensity: 0.8,
-        roughness: 0.3,
-      });
-
-      // ---------- 1. Body shell (rear half + front-lower; the front-top is open for the buttons) ----------
-      const rear = new THREE.Mesh(
-        shape(
-          new THREE.SphereGeometry(
-            1,
-            64,
-            ROWS,
-            Math.PI,
-            Math.PI,
-            0,
-            Math.PI,
-          ),
-        ),
-        shellMat,
-      );
-      rear.castShadow = true;
-      group.add(rear);
-
-      const frontLow = new THREE.Mesh(
-        shape(
-          new THREE.SphereGeometry(
-            1,
-            64,
-            ROWS - TOP_ROWS,
-            0,
-            Math.PI,
-            THETA_MAX,
-            Math.PI - THETA_MAX,
-          ),
-        ),
-        shellMat,
-      );
-      frontLow.castShadow = true;
-      group.add(frontLow);
-
-      // ---------- 2. Dark inner core (visible in the channel between the buttons) ----------
-      const core = new THREE.Mesh(
-        shape(new THREE.SphereGeometry(1, 128, ROWS), { k: CORE_K }),
-        coreMat,
-      );
-      group.add(core);
-
-      // ---------- 3. Left & right click buttons ----------
-      const btnL = new THREE.Mesh(
-        shape(
-          new THREE.SphereGeometry(
-            1,
-            32,
-            TOP_ROWS,
-            0,
-            Math.PI / 2,
-            0,
-            THETA_MAX,
-          ),
-          { side: -1, lift: 0.012 },
-        ),
-        buttonMat,
-      );
-      const btnR = new THREE.Mesh(
-        shape(
-          new THREE.SphereGeometry(
-            1,
-            32,
-            TOP_ROWS,
-            Math.PI / 2,
-            Math.PI / 2,
-            0,
-            THETA_MAX,
-          ),
-          { side: 1, lift: 0.012 },
-        ),
-        buttonMat,
-      );
-      btnL.castShadow = btnR.castShadow = true;
-      group.add(btnL, btnR);
-
-      // ---------- 4. Scroll wheel (ridged rubber tire + metal hub caps, slowly spinning) ----------
-      const wheelZ = 0.5,
-        wheelR = 0.12;
-      const wheel = new THREE.Group();
-      wheel.position.set(0, surfaceY(wheelZ, CORE_K) - 0.045, wheelZ);
-
-      const tire = new THREE.Mesh(
-        new THREE.CylinderGeometry(wheelR, wheelR, 0.09, 32),
-        rubberMat,
-      );
-      tire.rotation.z = Math.PI / 2;
-      wheel.add(tire);
-
-      const RIDGES = 20;
-      for (let i = 0; i < RIDGES; i++) {
-        const a = (i / RIDGES) * Math.PI * 2;
-        const ridge = new THREE.Mesh(
-          new THREE.BoxGeometry(0.092, 0.022, 0.03),
-          ridgeMat,
-        );
-        ridge.position.set(
-          0,
-          Math.cos(a) * (wheelR + 0.006),
-          Math.sin(a) * (wheelR + 0.006),
-        );
-        ridge.rotation.x = a;
-        wheel.add(ridge);
-      }
-      [-0.047, 0.047].forEach((x) => {
-        const cap = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.075, 0.075, 0.012, 24),
-          silverMetalMat,
-        );
-        cap.rotation.z = Math.PI / 2;
-        cap.position.x = x;
-        wheel.add(cap);
-      });
-      group.add(wheel);
-      animatedElements.push(() => {
-        wheel.rotation.x += 0.025;
-      });
-
-      // ---------- 5. DPI button behind the wheel ----------
-      const dpi = new THREE.Mesh(
-        new THREE.BoxGeometry(0.08, 0.022, 0.12),
-        thumbMat,
-      );
-      dpi.position.set(0, surfaceY(0.2, CORE_K) + 0.004, 0.2);
-      dpi.quaternion.setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0),
-        surfaceNormal(0.2, CORE_K),
-      );
-      group.add(dpi);
-
-      // ---------- 6. Thumb side buttons (right-handed mouse: thumb side is +X) ----------
-      [0.16, 0.5].forEach((zo, idx) => {
-        const yo = 0.42;
-        const xo = Math.sqrt(1 - zo * zo - yo * yo);
-        const t = (zo + 1) / 2;
-        const a = widthAt(t),
-          b = heightAt(t);
-        const pos = new THREE.Vector3(xo * a, yo * b, zo * LEN);
-        const n = new THREE.Vector3(xo / a, yo / b, zo / LEN).normalize();
-
-        const thumb = new THREE.Mesh(
-          new THREE.SphereGeometry(1, 24, 16),
-          thumbMat,
-        );
-        thumb.scale.set(0.03, 0.055, idx === 0 ? 0.17 : 0.12);
-        thumb.quaternion.setFromUnitVectors(
-          new THREE.Vector3(1, 0, 0),
-          n,
-        );
-        thumb.position.copy(pos).addScaledVector(n, -0.008);
-        group.add(thumb);
-      });
-
-      // ---------- 7. Glowing logo ring on the back hump ----------
-      const logoZ = -0.4;
-      const logo = new THREE.Mesh(
-        new THREE.TorusGeometry(0.07, 0.012, 12, 32),
-        cyanGlowMat,
-      );
-      logo.position.set(0, surfaceY(logoZ) + 0.002, logoZ);
-      logo.quaternion.setFromUnitVectors(
-        new THREE.Vector3(0, 0, 1),
-        surfaceNormal(logoZ),
-      );
-      group.add(logo);
-
-      // ---------- 8. Underside: optical sensor + glide feet ----------
-      const sensorRing = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.11, 0.11, 0.01, 24),
-        coreMat,
-      );
-      sensorRing.position.set(0, -0.03, 0.1);
-      group.add(sensorRing);
-      const sensor = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.07, 0.07, 0.014, 24),
-        sensorMat,
-      );
-      sensor.position.set(0, -0.031, 0.1);
-      group.add(sensor);
-
-      [
-        [-0.3, 0.7],
-        [0.3, 0.7],
-        [-0.38, -0.65],
-        [0.38, -0.65],
-      ].forEach(([x, z]) => {
-        const foot = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.1, 0.1, 0.016, 24),
-          padMat,
-        );
-        foot.position.set(x, -0.03, z);
-        group.add(foot);
-      });
-
-      // ---------- 9. Cable with strain relief and USB plug ----------
-      const cablePath = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(0, 0.03, 1.0),
-        new THREE.Vector3(0, -0.004, 1.4),
-        new THREE.Vector3(-0.35, -0.004, 1.75),
-        new THREE.Vector3(-0.95, -0.004, 1.6),
-        new THREE.Vector3(-1.35, -0.004, 1.0),
-        new THREE.Vector3(-1.45, -0.004, 0.55),
-      ]);
-      group.add(
-        new THREE.Mesh(
-          new THREE.TubeGeometry(cablePath, 80, 0.026, 12, false),
-          cableMat,
-        ),
-      );
-
-      const relief = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.034, 0.05, 0.14, 16),
-        cableMat,
-      );
-      relief.rotation.x = Math.PI / 2;
-      relief.position.set(0, 0.03, 1.2);
-      group.add(relief);
-
-      const plug = new THREE.Group();
-      plug.position.copy(cablePath.getPoint(1));
-      plug.position.y += 0.012;
-      plug.quaternion.setFromUnitVectors(
-        new THREE.Vector3(0, 0, 1),
-        cablePath.getTangent(1).normalize(),
-      );
-
-      const boot = new THREE.Mesh(
-        new THREE.BoxGeometry(0.15, 0.09, 0.2),
-        thumbMat,
-      );
-      boot.position.z = 0.1;
-      plug.add(boot);
-      const usbMetal = new THREE.Mesh(
-        new THREE.BoxGeometry(0.12, 0.05, 0.3),
-        silverMetalMat,
-      );
-      usbMetal.position.z = 0.33;
-      plug.add(usbMetal);
-      const usbSlot = new THREE.Mesh(
-        new THREE.BoxGeometry(0.1, 0.03, 0.01),
-        coreMat,
-      );
-      usbSlot.position.z = 0.485;
-      plug.add(usbSlot);
-      group.add(plug);
-
-      break;
-    }
-
-    /*
-     * OPTIONAL: update the Mouse entry in HARDWARE_DATA so the "Key Parts & Features"
-     * panel matches the new model:
-     *
-     * features: ['Contoured Palm Shell', 'Left & Right Click Buttons', 'Ridged Scroll Wheel', 'Thumb Side Buttons', 'Optical Sensor & Glide Feet']
-     */
-
-    case "audio-card": {
-      const pcb = new THREE.Mesh(
-        new THREE.BoxGeometry(2.6, 0.06, 1.5),
-        pcbMat,
-      );
-      pcb.castShadow = true;
-      group.add(pcb);
-
-      const pcie = new THREE.Mesh(
-        new THREE.BoxGeometry(0.9, 0.15, 0.06),
-        goldMat,
-      );
-      pcie.position.set(-0.5, -0.1, 0.72);
-      group.add(pcie);
-
-      const bracket = new THREE.Mesh(
-        new THREE.BoxGeometry(0.06, 1.4, 1.7),
-        silverMetalMat,
-      );
-      bracket.position.set(-1.3, 0.4, 0);
-      group.add(bracket);
-
-      const jackColors = [0x06b6d4, 0x0284c7, 0x67e8f9, 0x06b6d4];
-      jackColors.forEach((col, idx) => {
-        const jack = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.08, 0.08, 0.12, 16),
-          new THREE.MeshStandardMaterial({ color: col, roughness: 0.3 }),
-        );
-        jack.rotation.z = Math.PI / 2;
-        jack.position.set(-1.32, 0.1 + idx * 0.24, 0.2);
-        group.add(jack);
-      });
-
-      const shield = new THREE.Mesh(
-        new THREE.BoxGeometry(1.0, 0.18, 0.9),
-        whiteBodyMat,
-      );
-      shield.position.set(-0.2, 0.1, -0.1);
-      group.add(shield);
-      break;
-    }
-
-    case "cpu": {
-      const substrate = new THREE.Mesh(
-        new THREE.BoxGeometry(1.8, 0.08, 1.8),
-        pcbMat,
-      );
-      substrate.castShadow = true;
-      group.add(substrate);
-
-      const ihs = new THREE.Mesh(
-        new THREE.BoxGeometry(1.3, 0.12, 1.3),
-        silverMetalMat,
-      );
-      ihs.position.y = 0.08;
-      ihs.castShadow = true;
-      group.add(ihs);
-
-      const logo = new THREE.Mesh(
-        new THREE.BoxGeometry(0.5, 0.13, 0.5),
-        cyanGlowMat,
-      );
-      logo.position.y = 0.085;
-      group.add(logo);
-
-      for (let x = -0.7; x <= 0.7; x += 0.2) {
-        for (let z = -0.7; z <= 0.7; z += 0.2) {
-          const pin = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.015, 0.015, 0.06, 8),
-            goldMat,
-          );
-          pin.position.set(x, -0.07, z);
-          group.add(pin);
-        }
-      }
-      break;
-    }
-
-    case "gpu": {
-      const body = new THREE.Mesh(
-        new THREE.BoxGeometry(3.0, 0.6, 1.5),
-        whiteBodyMat,
-      );
-      body.castShadow = true;
-      group.add(body);
-
-      const fins = new THREE.Mesh(
-        new THREE.BoxGeometry(2.8, 0.3, 1.4),
-        silverMetalMat,
-      );
-      fins.position.y = -0.1;
-      group.add(fins);
-
-      [-0.75, 0.75].forEach((xOffset) => {
-        const fanGroup = new THREE.Group();
-        fanGroup.position.set(xOffset, 0.32, 0);
-
-        const cap = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16),
-          cyanGlowMat,
-        );
-        fanGroup.add(cap);
-
-        for (let b = 0; b < 7; b++) {
-          const blade = new THREE.Mesh(
-            new THREE.BoxGeometry(0.38, 0.02, 0.08),
-            darkMetalMat,
-          );
-          blade.rotation.y = (b * Math.PI * 2) / 7;
-          blade.position.x = Math.cos((b * Math.PI * 2) / 7) * 0.22;
-          blade.position.z = Math.sin((b * Math.PI * 2) / 7) * 0.22;
-          fanGroup.add(blade);
-        }
-        group.add(fanGroup);
-
-        animatedElements.push(() => {
-          fanGroup.rotation.y += 0.08;
-        });
-      });
-
-      const strip = new THREE.Mesh(
-        new THREE.BoxGeometry(2.4, 0.08, 0.05),
-        cyanGlowMat,
-      );
-      strip.position.set(0, 0.1, 0.76);
-      group.add(strip);
-      break;
-    }
-
-    case "keyboard": {
-      const base = new THREE.Mesh(
-        new THREE.BoxGeometry(3.4, 0.15, 1.3),
-        whiteBodyMat,
-      );
-      base.castShadow = true;
-      group.add(base);
-
-      for (let r = -0.45; r <= 0.45; r += 0.18) {
-        for (let c = -1.5; c <= 1.5; c += 0.18) {
-          const key = new THREE.Mesh(
-            new THREE.BoxGeometry(0.14, 0.08, 0.14),
-            darkMetalMat,
-          );
-          key.position.set(c, 0.11, r);
-          group.add(key);
-        }
-      }
-
-      const rgbPlate = new THREE.Mesh(
-        new THREE.BoxGeometry(3.3, 0.02, 1.2),
-        cyanGlowMat,
-      );
-      rgbPlate.position.y = 0.06;
-      group.add(rgbPlate);
-      break;
-    }
-
-    case "microphone": {
-      const base = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.55, 0.08, 32),
-        darkMetalMat,
-      );
-      base.position.y = -0.9;
-      group.add(base);
-
-      const stem = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.04, 0.04, 0.9, 16),
-        silverMetalMat,
-      );
-      stem.position.y = -0.45;
-      group.add(stem);
-
-      const micBody = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.22, 0.22, 0.7, 32),
-        whiteBodyMat,
-      );
-      micBody.position.y = 0.1;
-      group.add(micBody);
-
-      const meshHead = new THREE.Mesh(
-        new THREE.SphereGeometry(0.23, 32, 16),
-        silverMetalMat,
-      );
-      meshHead.position.y = 0.55;
-      group.add(meshHead);
-
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(0.23, 0.02, 16, 32),
-        cyanGlowMat,
-      );
-      ring.rotation.x = Math.PI / 2;
-      ring.position.y = 0.25;
-      group.add(ring);
-      break;
-    }
-
-    case "monitor": {
-      const bezel = new THREE.Mesh(
-        new THREE.BoxGeometry(3.2, 1.9, 0.1),
-        whiteBodyMat,
-      );
-      bezel.position.y = 0.4;
-      bezel.castShadow = true;
-      group.add(bezel);
-
-      const screen = new THREE.Mesh(
-        new THREE.PlaneGeometry(3.0, 1.75),
-        new THREE.MeshStandardMaterial({
-          color: 0x0b1220,
-          emissive: 0x06b6d4,
-          emissiveIntensity: 0.35,
-          roughness: 0.1,
-        }),
-      );
-      screen.position.set(0, 0.4, 0.052);
-      group.add(screen);
-
-      const stand = new THREE.Mesh(
-        new THREE.BoxGeometry(0.2, 0.8, 0.1),
-        silverMetalMat,
-      );
-      stand.position.set(0, -0.3, -0.1);
-      group.add(stand);
-
-      const base = new THREE.Mesh(
-        new THREE.BoxGeometry(1.2, 0.04, 0.8),
-        darkMetalMat,
-      );
-      base.position.set(0, -0.7, 0);
-      group.add(base);
-      break;
-    }
-
-    case "printer": {
-      // Main Body Base
-      const bodyGeo = new THREE.BoxGeometry(2.4, 0.9, 1.6);
-      const body = new THREE.Mesh(bodyGeo, whiteBodyMat);
-      body.position.set(0, 0.45, 0);
-      body.castShadow = true;
-      body.receiveShadow = true;
-      group.add(body);
-
-      // Dark Mid-Section (Paper Exit Gap / Accent Line)
-      const gapGeo = new THREE.BoxGeometry(2.42, 0.12, 1.5);
-      const gap = new THREE.Mesh(gapGeo, darkMetalMat || silverMetalMat);
-      gap.position.set(0, 0.45, 0.02);
-      group.add(gap);
-
-      // Top Scanner Assembly
-      const scannerGeo = new THREE.BoxGeometry(2.4, 0.35, 1.6);
-      const scanner = new THREE.Mesh(scannerGeo, whiteBodyMat);
-      scanner.position.set(0, 1.075, 0);
-      scanner.castShadow = true;
-      group.add(scanner);
-
-      // Scanner Glass Bed Gap Accent Line
-      const glassLineGeo = new THREE.BoxGeometry(2.3, 0.02, 1.5);
-      const glassLine = new THREE.Mesh(
-        glassLineGeo,
-        new THREE.MeshStandardMaterial({
-          color: 0x060a12,
-          roughness: 0.2,
-        }),
-      );
-      glassLine.position.set(0, 0.9, 0);
-      group.add(glassLine);
-
-      // Top Rear Input Paper Tray (Angled Back)
-      const inputTray = new THREE.Mesh(
-        new THREE.BoxGeometry(1.6, 0.05, 0.9),
-        silverMetalMat,
-      );
-      inputTray.rotation.x = -0.55;
-      inputTray.position.set(0, 1.4, -0.65);
-      inputTray.castShadow = true;
-      group.add(inputTray);
-
-      // Blank Paper Stack in Top Tray
-      const paperStack = new THREE.Mesh(
-        new THREE.BoxGeometry(1.4, 0.06, 1.0),
-        new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          roughness: 0.9,
-        }),
-      );
-      paperStack.rotation.x = -0.55;
-      paperStack.position.set(0, 1.43, -0.63);
-      group.add(paperStack);
-
-      // Front Output Paper Tray (Extending Forward)
-      const outputTray = new THREE.Mesh(
-        new THREE.BoxGeometry(1.5, 0.04, 0.9),
-        silverMetalMat,
-      );
-      outputTray.position.set(0, 0.22, 0.85);
-      outputTray.castShadow = true;
-      group.add(outputTray);
-
-      // Output Printed Paper (Sliding out front slot)
-      const outputPaper = new THREE.Mesh(
-        new THREE.PlaneGeometry(1.2, 0.9),
-        new THREE.MeshStandardMaterial({
-          color: 0xf8f8f8,
-          roughness: 0.8,
-          side: THREE.DoubleSide,
-        }),
-      );
-      outputPaper.rotation.x = Math.PI / 2;
-      outputPaper.position.set(0, 0.25, 0.8);
-      outputPaper.receiveShadow = true;
-      group.add(outputPaper);
-
-      // Control Panel Mount (Angled Front Screen Plate)
-      const panelMount = new THREE.Mesh(
-        new THREE.BoxGeometry(0.9, 0.3, 0.08),
-        whiteBodyMat,
-      );
-      panelMount.rotation.x = -0.25;
-      panelMount.position.set(0.65, 0.75, 0.81);
-      group.add(panelMount);
-
-      // LCD Screen
-      const lcd = new THREE.Mesh(
-        new THREE.BoxGeometry(0.45, 0.2, 0.02),
-        cyanGlowMat,
-      );
-      lcd.rotation.x = -0.25;
-      lcd.position.set(0.48, 0.76, 0.85);
-      group.add(lcd);
-
-      // Control Buttons (Power, Start, Cancel)
-      const btnGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.03, 16);
-      const btnMat = new THREE.MeshStandardMaterial({
-        color: 0x060a12,
-        roughness: 0.32,
-      });
-
-      const powerBtn = new THREE.Mesh(btnGeo, btnMat);
-      powerBtn.rotation.x = Math.PI / 2 - 0.25;
-      powerBtn.position.set(0.82, 0.78, 0.85);
-      group.add(powerBtn);
-
-      const startBtn = new THREE.Mesh(
-        btnGeo,
-        new THREE.MeshStandardMaterial({
-          color: 0x06b6d4,
-          emissive: 0x0284c7,
-          emissiveIntensity: 0.35,
-          roughness: 0.3,
-        }),
-      );
-      startBtn.rotation.x = Math.PI / 2 - 0.25;
-      startBtn.position.set(0.93, 0.78, 0.85);
-      group.add(startBtn);
-
-      // Rubber Base Feet
-      const footGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.04, 12);
-      const footMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
-      const footPositions = [
-        [-1.0, 0.02, -0.6],
-        [1.0, 0.02, -0.6],
-        [-1.0, 0.02, 0.6],
-        [1.0, 0.02, 0.6],
-      ];
-
-      footPositions.forEach(([x, y, z]) => {
-        const foot = new THREE.Mesh(footGeo, footMat);
-        foot.position.set(x, y, z);
-        group.add(foot);
-      });
-
-      break;
-    }
-
-    case "projector": {
-      const housing = new THREE.Mesh(
-        new THREE.BoxGeometry(2.3, 0.75, 1.8),
-        whiteBodyMat,
-      );
-      housing.castShadow = true;
-      group.add(housing);
-
-      const lensOuter = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.32, 0.32, 0.2, 32),
-        silverMetalMat,
-      );
-      lensOuter.rotation.x = Math.PI / 2;
-      lensOuter.position.set(-0.5, 0, 0.9);
-      group.add(lensOuter);
-
-      const lensGlass = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.25, 0.25, 0.22, 32),
-        cyanGlowMat,
-      );
-      lensGlass.rotation.x = Math.PI / 2;
-      lensGlass.position.set(-0.5, 0, 0.92);
-      group.add(lensGlass);
-      break;
-    }
-
-    case "scanner": {
-      const body = new THREE.Mesh(
-        new THREE.BoxGeometry(2.6, 0.4, 1.8),
-        whiteBodyMat,
-      );
-      body.castShadow = true;
-      group.add(body);
-
-      const glass = new THREE.Mesh(
-        new THREE.PlaneGeometry(2.2, 1.4),
-        new THREE.MeshStandardMaterial({
-          color: 0x112233,
-          roughness: 0.1,
-          metalness: 0.9,
-          transparent: true,
-          opacity: 0.8,
-        }),
-      );
-      glass.rotation.x = -Math.PI / 2;
-      glass.position.y = 0.21;
-      group.add(glass);
-
-      const laserBar = new THREE.Mesh(
-        new THREE.BoxGeometry(0.08, 0.04, 1.35),
-        cyanGlowMat,
-      );
-      laserBar.position.set(-0.9, 0.22, 0);
-      group.add(laserBar);
-
-      let sweepDir = 1;
-      animatedElements.push(() => {
-        laserBar.position.x += 0.015 * sweepDir;
-        if (laserBar.position.x > 0.9 || laserBar.position.x < -0.9) {
-          sweepDir *= -1;
-        }
-      });
-      break;
-    }
-
-    case "speakers": {
-      [-0.9, 0.9].forEach((xPos) => {
-        const box = new THREE.Mesh(
-          new THREE.BoxGeometry(0.8, 1.5, 0.8),
-          whiteBodyMat,
-        );
-        box.position.set(xPos, 0, 0);
-        box.castShadow = true;
-        group.add(box);
-
-        const woofer = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.28, 0.15, 0.1, 32),
-          darkMetalMat,
-        );
-        woofer.rotation.x = Math.PI / 2;
-        woofer.position.set(xPos, -0.2, 0.38);
-        group.add(woofer);
-
-        const tweeter = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.12, 0.08, 0.08, 32),
-          cyanGlowMat,
-        );
-        tweeter.rotation.x = Math.PI / 2;
-        tweeter.position.set(xPos, 0.35, 0.38);
-        group.add(tweeter);
-      });
-      break;
-    }
-
-    case "webcam": {
-      const clip = new THREE.Mesh(
-        new THREE.BoxGeometry(0.4, 0.4, 0.5),
-        darkMetalMat,
-      );
-      clip.position.y = -0.5;
-      group.add(clip);
-
-      const webcamHead = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.3, 0.3, 1.0, 32),
-        whiteBodyMat,
-      );
-      webcamHead.rotation.z = Math.PI / 2;
-      webcamHead.position.y = 0.1;
-      webcamHead.castShadow = true;
-      group.add(webcamHead);
-
-      const lens = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.18, 0.18, 0.1, 32),
-        cyanGlowMat,
-      );
-      lens.rotation.x = Math.PI / 2;
-      lens.position.set(0, 0.1, 0.28);
-      group.add(lens);
-      break;
-    }
-
-    default: {
-      const cube = new THREE.Mesh(
-        new THREE.BoxGeometry(1.5, 1.5, 1.5),
-        whiteBodyMat,
-      );
-      group.add(cube);
-      break;
-    }
-  }
-
-  return group;
 }
 
 /**
@@ -1816,12 +1956,35 @@ function openModal(id) {
   if (!data) return;
 
   currentHardwareId = id;
+  currentHardwareData = data;
+  currentModelReady = false;
+  setKeyPartsActive(false);
+  resetExplodedParts();
 
   document.getElementById("modalTitle").innerHTML =
     `<i class="fa-solid ${data.icon} text-cyanGlow mr-2"></i>${data.name}`;
-  document.getElementById("modalCategoryBadge").innerText = data.category;
+  document.getElementById("modalCategoryBadge").innerText =
+    data.categories.join(" · ");
   document.getElementById("modalDefinition").innerText = data.definition;
+  document.getElementById("modalHowWorks").innerText = data.howWorks;
   document.getElementById("modalExamples").innerText = data.examples;
+  const modelDisclaimer = document.getElementById("modelDisclaimer");
+  modelDisclaimer.replaceChildren();
+  const modelDisclaimerText = document.createElement("span");
+  modelDisclaimerText.textContent =
+    data.modelDisclaimer ||
+    "Simplified procedural study model; proportions and internal details vary by product.";
+  modelDisclaimer.appendChild(modelDisclaimerText);
+
+  const categories = document.getElementById("modalCategories");
+  categories.innerHTML = "";
+  data.categories.forEach((category) => {
+    const badge = document.createElement("span");
+    badge.className =
+      "rounded-md border border-violet-400/30 bg-violet-500/10 px-2 py-1 text-[11px] font-medium text-violet-200";
+    badge.textContent = category;
+    categories.appendChild(badge);
+  });
 
   const funcList = document.getElementById("modalFunctions");
   funcList.innerHTML = "";
@@ -1837,9 +2000,19 @@ function openModal(id) {
     const badge = document.createElement("div");
     badge.className =
       "bg-navyBg p-2 rounded-lg border border-slate-800 text-slate-300 font-mono text-[11px] flex items-center gap-1.5";
-    badge.innerHTML = `<i class="fa-solid fa-check text-cyanGlow"></i> ${ft}`;
+    const icon = document.createElement("i");
+    icon.className = "fa-solid fa-check text-cyanGlow";
+    const text = document.createElement("span");
+    text.textContent = ft;
+    badge.append(icon, text);
     featGrid.appendChild(badge);
   });
+
+  const explodedButton = document.getElementById("explodedViewToggle");
+  const explodedDivider = document.getElementById("explodedViewDivider");
+  const supportsExplodedView = (data.parts || []).some((part) => part.meshId);
+  explodedButton.classList.toggle("hidden", !supportsExplodedView);
+  explodedDivider.classList.toggle("hidden", !supportsExplodedView);
 
   const modal = document.getElementById("viewerModal");
   const loader = document.getElementById("canvasLoader");
@@ -1852,6 +2025,124 @@ function openModal(id) {
       initThreeJS();
     }
 
+    function renderManufacturerReference(data) {
+      const container = document.getElementById("manufacturerReference");
+      container.replaceChildren();
+
+      const reference = data.visualReference;
+      if (!reference) {
+        const unavailable = document.createElement("p");
+        unavailable.className = "text-xs leading-relaxed text-slate-400";
+        unavailable.textContent =
+          "No verified product reference is available for this component yet.";
+        container.appendChild(unavailable);
+        return;
+      }
+
+      const model = document.createElement("p");
+      model.className = "text-sm font-semibold text-slate-100";
+      model.textContent = reference.model;
+      container.appendChild(model);
+
+      if (reference.variantNote) {
+        const variantNote = document.createElement("p");
+        variantNote.className = "text-xs leading-relaxed text-slate-400";
+        variantNote.textContent = reference.variantNote;
+        container.appendChild(variantNote);
+      }
+
+      const source = document.createElement("p");
+      source.className = "text-xs text-slate-400";
+      const sourceHost = reference.url ? new URL(reference.url).hostname : null;
+      source.textContent = reference.manufacturer
+        ? `${reference.manufacturer}${sourceHost ? ` · ${sourceHost}` : ""}`
+        : sourceHost
+          ? `Source: ${sourceHost}`
+          : "Source not verified";
+      container.appendChild(source);
+
+      if (reference.url) {
+        const pageLink = document.createElement("a");
+        pageLink.href = reference.url;
+        pageLink.target = "_blank";
+        pageLink.rel = "noopener noreferrer";
+        pageLink.className =
+          "inline-flex items-center gap-1.5 text-xs font-semibold text-violet-200 underline decoration-violet-400/50 underline-offset-2 hover:text-violet-100";
+        pageLink.textContent = reference.manufacturer
+          ? "Open manufacturer product page"
+          : "Open reference source";
+        const externalIcon = document.createElement("i");
+        externalIcon.className = "fa-solid fa-arrow-up-right-from-square";
+        pageLink.appendChild(externalIcon);
+        container.appendChild(pageLink);
+      }
+
+      const images = Array.isArray(reference.images) ? reference.images : [];
+      if (!images.length) {
+        const noPhotos = document.createElement("p");
+        noPhotos.className = "text-xs leading-relaxed text-slate-400";
+        noPhotos.textContent = reference.photoNote || (reference.conceptual
+          ? "This is a conceptual component, not a specific product. Open the reference source for related documentation."
+          : "No official product photos have been verified for this reference yet.");
+        container.appendChild(noPhotos);
+        return;
+      }
+
+      const gallery = document.createElement("div");
+      gallery.className = "grid grid-cols-2 gap-2 sm:grid-cols-3";
+      images.forEach((image) => {
+        if (!image || typeof image.url !== "string" || !image.url.trim()) return;
+
+        const photoLink = document.createElement("a");
+        photoLink.href = image.url;
+        photoLink.target = "_blank";
+        photoLink.rel = "noopener noreferrer";
+        photoLink.className =
+          "group overflow-hidden rounded-lg border border-slate-700/80 bg-[#080d17] focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-300";
+        photoLink.title = image.caption || `Open original ${reference.model} photo`;
+
+        const photo = document.createElement("img");
+        photo.src = image.url;
+        photo.alt = image.alt || `${reference.model} product photo`;
+        photo.loading = "lazy";
+        photo.decoding = "async";
+        photo.className =
+          "aspect-[4/3] w-full object-contain transition-transform group-hover:scale-105";
+        photo.addEventListener("error", () => {
+          photoLink.remove();
+          if (!gallery.childElementCount) {
+            const fallback = document.createElement("p");
+            fallback.className = "col-span-full text-xs text-slate-400";
+            fallback.textContent =
+              "The manufacturer photo could not be loaded. Open the product page to view current images.";
+            gallery.appendChild(fallback);
+          }
+        }, { once: true });
+
+        photoLink.appendChild(photo);
+        if (image.caption) {
+          const caption = document.createElement("span");
+          caption.className = "block px-2 py-1.5 text-[10px] text-slate-400";
+          caption.textContent = image.caption;
+          photoLink.appendChild(caption);
+        }
+        gallery.appendChild(photoLink);
+      });
+
+      if (gallery.querySelector("a")) {
+        container.appendChild(gallery);
+        const attribution = document.createElement("p");
+        attribution.className = "text-[10px] text-slate-500";
+        attribution.textContent =
+          "Product images are linked from their original source; open a photo to view it directly.";
+        container.appendChild(attribution);
+      } else if (gallery.childElementCount) {
+        container.appendChild(gallery);
+      }
+    }
+
+    renderManufacturerReference(data);
+
     // Cleanup previous group
     if (currentMeshGroup) {
       disposeGroup(currentMeshGroup);
@@ -1859,7 +2150,23 @@ function openModal(id) {
 
     // Load selected hardware model
     loadHardwareModel(data, (loadedModel) => {
+      if (
+        currentHardwareId !== id ||
+        document.getElementById("viewerModal").classList.contains("hidden")
+      ) {
+        disposeGroup(loadedModel);
+        return;
+      }
       currentMeshGroup = loadedModel;
+      currentModelReady = true;
+      const hasExplodableParts = getExplodablePartGroups().length > 0;
+      document
+        .getElementById("explodedViewToggle")
+        .classList.toggle("hidden", !hasExplodableParts);
+      document
+        .getElementById("explodedViewDivider")
+        .classList.toggle("hidden", !hasExplodableParts);
+      currentModelBaseRotation.copy(currentMeshGroup.rotation);
       currentMeshGroup.traverse((node) => {
         if (node.isMesh) {
           node.castShadow = true;
@@ -1867,6 +2174,10 @@ function openModal(id) {
         }
       });
       scene.add(currentMeshGroup);
+      if (keyPartsActive) {
+        setModelTechnicalView(true);
+        setKeyPartsActive(true);
+      }
 
       // Centering and camera auto-fit calculation
       fitModelToCamera(currentMeshGroup);
@@ -1889,6 +2200,9 @@ function closeModal() {
   const modal = document.getElementById("viewerModal");
   modal.classList.add("hidden");
   document.body.style.overflow = "";
+  currentModelReady = false;
+  setKeyPartsActive(false);
+  resetExplodedParts();
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
@@ -1897,7 +2211,8 @@ function closeModal() {
 
 function toggleAutoRotate() {
   autoRotate = !autoRotate;
-  if (controls) controls.autoRotate = autoRotate;
+  if (keyPartsActive) keyPartsPreviousAutoRotate = autoRotate;
+  if (controls) controls.autoRotate = keyPartsActive ? false : autoRotate;
   const btn = document.getElementById("btnAutoRotate");
   if (autoRotate) {
     btn.classList.add("text-cyanGlow", "bg-slate-800");
@@ -1909,6 +2224,7 @@ function toggleAutoRotate() {
 function rotateModelY(angle) {
   if (currentMeshGroup) {
     currentMeshGroup.rotation.y += angle;
+    updateKeyPartAnnotations();
   }
 }
 
@@ -1918,6 +2234,7 @@ function zoom3D(delta) {
     if (newFov >= 15 && newFov <= 75) {
       camera.fov = newFov;
       camera.updateProjectionMatrix();
+      updateKeyPartAnnotations();
     }
   }
 }
@@ -1945,8 +2262,9 @@ function toggleWireframe() {
 
 function reset3DCamera() {
   if (currentMeshGroup) {
-    currentMeshGroup.rotation.set(0, 0, 0);
+    currentMeshGroup.rotation.copy(currentModelBaseRotation);
     fitModelToCamera(currentMeshGroup);
+    updateKeyPartAnnotations();
   }
 }
 
