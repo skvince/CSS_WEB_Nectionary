@@ -175,11 +175,9 @@ const HARDWARE_DATA = [
     examples:
       "Logitech M220 / Pebble Wireless Mouse, MX Master 3S, Razer DeathAdder V3 Pro.",
     features: [
-      "Logi Oval Pebble Contour",
-      "Center Tactile Scroll Wheel",
-      "Top Split Click Buttons",
-      "Optical Sensor Assembly",
-      "Smooth Low-Friction Feet",
+      "Mouse Shell",
+      "Scroll Wheel",
+      "Optical Sensor",
     ],
   },
   {
@@ -1996,14 +1994,15 @@ function openModal(id) {
 
   const featGrid = document.getElementById("modalFeatures");
   featGrid.innerHTML = "";
-  data.features.forEach((ft) => {
+  (data.parts || []).forEach((part) => {
     const badge = document.createElement("div");
     badge.className =
       "bg-navyBg p-2 rounded-lg border border-slate-800 text-slate-300 font-mono text-[11px] flex items-center gap-1.5";
     const icon = document.createElement("i");
     icon.className = "fa-solid fa-check text-cyanGlow";
     const text = document.createElement("span");
-    text.textContent = ft;
+    text.textContent = part.name;
+    badge.title = part.description || part.name;
     badge.append(icon, text);
     featGrid.appendChild(badge);
   });
