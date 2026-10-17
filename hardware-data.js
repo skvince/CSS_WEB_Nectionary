@@ -200,6 +200,7 @@ const HARDWARE_PART_PROFILES = {
   ],
   flash: [
     ["enclosure", "Drive enclosure", "Protects the USB connector and flash-memory electronics."],
+    ["usb-connector", "USB connector", "Connects the flash drive to a computer's USB port."],
     ["controller-chip", "Flash controller", "Translates USB storage commands into flash-memory operations."],
     ["memory-chips", "NAND flash", "Stores files as non-volatile memory cells."],
   ],
@@ -416,8 +417,13 @@ const HARDWARE_VISUAL_REFERENCES = {
     manufacturer: "Shure",
     model: "SM7B Vocal Microphone",
     url: "https://www.shure.com/en-US/products/microphones/sm7b",
-    photoNote:
-      "Shure's official photo host blocks embedding. Open the product page to view its original photos.",
+    images: [
+        {
+          url: "https://products.shureweb.eu/cdn-cgi/image/width=1380,height=1380,format=auto/shure_product_db/product_main_images/files/3ac/40e/15-/original/cb0c8564fc691fe2ff3d2b67889ab1c2.webp",
+          alt: "SM7B Vocal Microphone product photo",
+          caption: "Official product image",
+        },
+    ],
   },
   monitor: {
     manufacturer: "Dell",
@@ -466,7 +472,7 @@ const HARDWARE_VISUAL_REFERENCES = {
     url: "https://www.fractal-design.com/products/cases/north-series/north/north-chalk-white/",
     images: [
       {
-        url: "https://assets.fractal-design.com/images/uxzbxy2o/production/1d30913173340ec3066800938816cc20e6a6e227-2460x1845.jpg?w=1200&h=630&fit=crop&auto=format&q=80",
+        url: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRKkFoU5dxy7t8_4ll22A77PiMlGY5H568Mn1XvDJXEnOImeILDC2hbelZM_aC4hMExMhYxCJB3i2QJ_SxXZNCBtUrYsD29AhDNqq5uGTyixfu97vfc_WaZNX0",
         alt: "Fractal Design North Chalk White computer case official product image",
         caption: "Official North Chalk White product image",
       },

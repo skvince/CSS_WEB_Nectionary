@@ -924,6 +924,178 @@ function createCatalogHardwareModel(item) {
       box("tongue", 0.58, 0.14, 0.12, 0, -0.04, 0.36, materials.body);
       box("contacts", 0.42, 0.045, 0.055, 0, -0.03, 0.44, materials.gold);
       break;
+    case "flash": {
+      const roundedOutline = (width, depth, radius) => {
+        const left = -width / 2;
+        const right = width / 2;
+        const front = -depth / 2;
+        const back = depth / 2;
+        const shape = new THREE.Shape();
+        shape.moveTo(left + radius, front);
+        shape.lineTo(right - radius, front);
+        shape.quadraticCurveTo(right, front, right, front + radius);
+        shape.lineTo(right, back - radius);
+        shape.quadraticCurveTo(right, back, right - radius, back);
+        shape.lineTo(left + radius, back);
+        shape.quadraticCurveTo(left, back, left, back - radius);
+        shape.lineTo(left, front + radius);
+        shape.quadraticCurveTo(left, front, left + radius, front);
+        return shape;
+      };
+      const makeDriveShell = (
+        name,
+        width,
+        depth,
+        radius,
+        height,
+        material,
+        y,
+      ) => {
+        const shape = roundedOutline(width, depth, radius);
+        const keyringHole = new THREE.Path();
+        keyringHole.absarc(-width * 0.38, 0, 0.19, 0, Math.PI * 2, true);
+        shape.holes.push(keyringHole);
+        const shell = new THREE.Mesh(
+          new THREE.ExtrudeGeometry(shape, {
+            depth: height,
+            bevelEnabled: true,
+            bevelSegments: 3,
+            steps: 1,
+            bevelSize: 0.025,
+            bevelThickness: 0.025,
+          }),
+          material,
+        );
+        shell.name = name;
+        shell.rotation.x = Math.PI / 2;
+        shell.position.y = y;
+        shell.castShadow = true;
+        shell.receiveShadow = true;
+        group.add(shell);
+        return shell;
+      };
+
+      makeDriveShell(
+        "enclosure",
+        3.35,
+        1.12,
+        0.2,
+        0.17,
+        materials.metal,
+        0.11,
+      );
+      makeDriveShell(
+        "enclosure",
+        3.22,
+        0.99,
+        0.18,
+        0.13,
+        new THREE.MeshPhysicalMaterial({
+          color: 0x050607,
+          roughness: 0.3,
+          metalness: 0.04,
+          clearcoat: 0.55,
+          clearcoatRoughness: 0.28,
+        }),
+        0.24,
+      );
+
+      const topPanel = roundedOutline(2.16, 0.69, 0.18);
+      const panelMesh = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(topPanel, {
+          depth: 0.018,
+          bevelEnabled: true,
+          bevelSegments: 2,
+          steps: 1,
+          bevelSize: 0.012,
+          bevelThickness: 0.012,
+        }),
+        new THREE.MeshStandardMaterial({
+          color: 0x101214,
+          roughness: 0.36,
+          metalness: 0.08,
+        }),
+      );
+      panelMesh.name = "enclosure";
+      panelMesh.rotation.x = Math.PI / 2;
+      panelMesh.position.set(0.22, 0.255, 0);
+      panelMesh.castShadow = true;
+      group.add(panelMesh);
+
+      const circuit = new THREE.Group();
+      circuit.name = "controller-chip";
+      const controller = new THREE.Mesh(
+        new THREE.BoxGeometry(0.32, 0.055, 0.27),
+        materials.dark,
+      );
+      controller.position.set(0.45, -0.025, 0);
+      circuit.add(controller);
+      group.add(circuit);
+
+      const memory = new THREE.Group();
+      memory.name = "memory-chips";
+      const nand = new THREE.Mesh(
+        new THREE.BoxGeometry(0.56, 0.045, 0.3),
+        materials.pcb,
+      );
+      nand.position.set(-0.35, -0.025, 0);
+      memory.add(nand);
+      group.add(memory);
+
+      const connector = new THREE.Group();
+      connector.name = "usb-connector";
+      const connectorBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.92, 0.12, 0.62),
+        materials.metal,
+      );
+      connectorBody.position.set(2.08, 0.015, 0);
+      connectorBody.castShadow = true;
+      connector.add(connectorBody);
+      const tongue = new THREE.Mesh(
+        new THREE.BoxGeometry(0.75, 0.045, 0.39),
+        materials.dark,
+      );
+      tongue.position.set(2.12, 0.08, 0);
+      connector.add(tongue);
+      [-0.13, 0.13].forEach((z) => {
+        const opening = new THREE.Mesh(
+          new THREE.BoxGeometry(0.2, 0.012, 0.13),
+          materials.dark,
+        );
+        opening.position.set(2.23, 0.11, z);
+        connector.add(opening);
+      });
+      group.add(connector);
+
+      const labelCanvas = document.createElement("canvas");
+      labelCanvas.width = 512;
+      labelCanvas.height = 128;
+      const context = labelCanvas.getContext("2d");
+      if (!context) {
+        throw new Error("Unable to create the flash-drive label texture.");
+      }
+      context.fillStyle = "#d1d5d8";
+      context.font = "600 96px Arial, sans-serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+
+      const labelTexture = new THREE.CanvasTexture(labelCanvas);
+      labelTexture.encoding = THREE.sRGBEncoding;
+      const label = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.05, 0.26),
+        new THREE.MeshBasicMaterial({
+          map: labelTexture,
+          transparent: true,
+          depthWrite: false,
+        }),
+      );
+      label.name = "enclosure";
+      label.rotation.x = -Math.PI / 2;
+      label.position.set(0.22, 0.272, 0);
+      label.scale.set(1.65, 1, 1);
+      group.add(label);
+      break;
+    }
     case "slot":
       box("housing", 2.15, 0.2, 0.4, 0, 0, 0, materials.dark);
       box("contacts", 1.62, 0.045, 0.16, 0, -0.13, 0, materials.gold);
@@ -1106,30 +1278,59 @@ function createCatalogHardwareModel(item) {
       box("memory-chips", 0.54, 0.07, 0.28, 0.28, 0.2, 0, materials.dark);
       box("usb-connector", 0.36, 0.16, 0.38, 0, 0, 0.44, materials.metal);
       break;
-    case "headphones":
-      const headband = new THREE.Mesh(
-        new THREE.TorusGeometry(0.72, 0.1, 14, 40, Math.PI),
-        materials.dark,
-      );
-      headband.name = "headband";
-      headband.rotation.z = Math.PI;
-      headband.position.y = 0.35;
-      group.add(headband);
-      [-0.72, 0.72].forEach((x) => {
-        const cup = cylinder("earcups", 0.42, 0.42, 0.32, x, -0.32, 0, materials.body);
-        cup.rotation.z = Math.PI / 2;
-      });
-      curvedCable(
-        "cable",
-        [
-          [0.72, -0.38, 0],
-          [0.88, -0.72, 0.05],
-          [1.2, -0.98, 0.08],
-        ],
-        0.025,
-        materials.rubber,
-      );
-      break;
+case "headphones": {
+  // --- 1. HEADBAND (Continuous Tube Arch) ---
+  const headbandCurve = new THREE.QuadraticBezierCurve3(
+    new THREE.Vector3(-0.65, 0.2, 0),
+    new THREE.Vector3(0, 1.1, 0),
+    new THREE.Vector3(0.65, 0.2, 0)
+  );
+
+  const headbandGeo = new THREE.TubeGeometry(headbandCurve, 32, 0.08, 16, false);
+  const headband = new THREE.Mesh(headbandGeo, materials.dark);
+  headband.name = "headband";
+  group.add(headband);
+
+  // --- 2. SINGLE-STEM ADJUSTERS & EAR CUPS ---
+  [-0.65, 0.65].forEach((x) => {
+    const isRight = x > 0;
+
+    // Vertical Stem Slider connecting headband to earcup
+    const stem = cylinder("stem", 0.035, 0.035, 0.35, x, -0.05, 0, materials.dark);
+
+    // Main Earcup Shell (Tilted slightly inward)
+    const cup = cylinder("earcups", 0.38, 0.34, 0.22, x, -0.37, 0, materials.body);
+    cup.rotation.z = isRight ? Math.PI / 2 - 0.15 : Math.PI / 2 + 0.15;
+    cup.rotation.y = isRight ? 0.08 : -0.08;
+
+    // Cushion Pad (Oval Ring attached to the inside face)
+    const padGeo = new THREE.TorusGeometry(0.26, 0.08, 16, 32);
+    const pad = new THREE.Mesh(padGeo, materials.rubber);
+    pad.name = "cushion";
+    pad.rotation.y = Math.PI / 2;
+    pad.position.set(x + (isRight ? -0.08 : 0.08), -0.37, 0);
+    pad.scale.set(1, 1.15, 1);
+    group.add(pad);
+  });
+
+  // --- 3. AUDIO CABLE ---
+  // Cable jack connector on the bottom of the left earcup
+  cylinder("cable_jack", 0.02, 0.02, 0.08, -0.65, -0.6, 0, materials.dark);
+
+  // Curved audio cable trailing down from the left cup
+  curvedCable(
+    "cable",
+    [
+      [-0.65, -0.64, 0],
+      [-0.75, -0.95, 0.05],
+      [-0.9, -1.25, 0.1],
+    ],
+    0.02,
+    materials.rubber
+  );
+
+  break;
+}
     case "vr": {
       box("enclosure", 1.75, 0.9, 0.75, 0, 0, 0.12, materials.dark);
       [-0.42, 0.42].forEach((x) => {
@@ -1148,34 +1349,37 @@ function createCatalogHardwareModel(item) {
       group.add(strap);
       break;
     }
-    case "joystick":
-      cylinder("base", 0.78, 0.86, 0.25, 0, -0.48, 0, materials.dark, 40);
-      cylinder("stick", 0.13, 0.18, 0.9, 0, 0.08, 0, materials.metal);
-      cylinder("trigger", 0.12, 0.13, 0.22, 0, 0.48, -0.12, materials.violet);
-      cylinder("buttons", 0.12, 0.12, 0.1, 0.36, 0.18, 0.12, materials.violet);
-      break;
-    case "trackball":
-      box("base", 1.6, 0.42, 1.3, 0, 0, 0, materials.dark);
-      cylinder("ball", 0.42, 0.42, 0.22, 0, 0.32, -0.08, materials.violet, 40);
-      box("buttons", 0.3, 0.09, 0.23, -0.45, 0.27, 0.4, materials.metal);
-      box("buttons", 0.3, 0.09, 0.23, 0.45, 0.27, 0.4, materials.metal);
-      break;
-    case "lightPen": {
-      const body = cylinder("body", 0.09, 0.15, 1.5, 0, 0, 0, materials.body, 24);
-      body.rotation.z = Math.PI / 4;
-      cylinder("sensor", 0.075, 0.075, 0.12, -0.48, 0.48, 0, materials.glass, 20);
-      curvedCable(
-        "connectors",
-        [
-          [0.42, -0.42, 0],
-          [0.72, -0.78, 0],
-          [1.08, -0.85, 0],
-        ],
-        0.025,
-        materials.rubber,
-      );
-      break;
-    }
+    case "joystick": {
+  // Base (main wide base plate + upper silver layer)
+  cylinder("base", 1.1, 1.25, 0.12, 0, -0.54, 0, materials.dark, 40);
+  cylinder("base", 0.78, 0.92, 0.15, 0, -0.42, 0, materials.body, 40);
+  cylinder("base", 0.38, 0.42, 0.16, 0, -0.28, 0, materials.dark, 32);
+
+  // Control stick (shaft + upper flight head + flared hand rest)
+  const stick = cylinder("stick", 0.12, 0.18, 0.72, 0, 0.12, 0, materials.dark, 24);
+  stick.rotation.x = 0.12;
+
+  cylinder("stick", 0.24, 0.28, 0.25, 0, 0.48, -0.06, materials.dark, 24);
+  cylinder("stick", 0.35, 0.22, 0.08, 0, -0.15, 0.18, materials.dark, 24);
+
+  // Trigger (rear silver trigger mechanism)
+  cylinder("trigger", 0.08, 0.09, 0.16, 0, 0.38, -0.18, materials.metal, 16);
+
+  // Control buttons (top hat switch, head buttons, side throttle, and base buttons)
+  cylinder("buttons", 0.07, 0.07, 0.08, 0, 0.62, -0.04, materials.dark, 16);
+  cylinder("buttons", 0.04, 0.04, 0.06, -0.1, 0.59, -0.02, materials.metal);
+  cylinder("buttons", 0.04, 0.04, 0.06, 0.1, 0.59, -0.02, materials.metal);
+
+  const throttle = cylinder("buttons", 0.08, 0.08, 0.18, 0.52, -0.38, 0.12, materials.dark, 20);
+  throttle.rotation.z = Math.PI / 2;
+
+  [-0.12, 0, 0.12].forEach((zOffset, i) => {
+    cylinder("buttons", 0.05, 0.05, 0.05, -0.42, -0.34, zOffset - 0.12, materials.dark);
+    cylinder("buttons", 0.05, 0.05, 0.05, -0.54, -0.34, zOffset - 0.12, materials.dark);
+  });
+
+  break;
+}
     case "yoke": {
       const frame = new THREE.Mesh(
         new THREE.TorusGeometry(0.72, 0.13, 16, 40, Math.PI * 1.5),

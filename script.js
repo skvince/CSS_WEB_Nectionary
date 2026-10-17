@@ -2025,123 +2025,42 @@ function openModal(id) {
       initThreeJS();
     }
 
-    function renderManufacturerReference(data) {
-      const container = document.getElementById("manufacturerReference");
+    function renderExamplePicture(data) {
+      const container = document.getElementById("examplePicture");
       container.replaceChildren();
 
       const reference = data.visualReference;
-      if (!reference) {
+      let imageUrl = null;
+
+      if (reference?.images?.length) {
+        imageUrl = reference.images[0].url;
+      } else if (reference?.url) {
+        const searchTerm = encodeURIComponent(`${data.name} computer hardware`);
+        imageUrl = `https://www.google.com/search?q=${searchTerm}&tbm=isch`;
+      }
+
+      if (!imageUrl) {
         const unavailable = document.createElement("p");
         unavailable.className = "text-xs leading-relaxed text-slate-400";
-        unavailable.textContent =
-          "No verified product reference is available for this component yet.";
+        unavailable.textContent = "Example picture unavailable for this component.";
         container.appendChild(unavailable);
         return;
       }
 
-      const model = document.createElement("p");
-      model.className = "text-sm font-semibold text-slate-100";
-      model.textContent = reference.model;
-      container.appendChild(model);
-
-      if (reference.variantNote) {
-        const variantNote = document.createElement("p");
-        variantNote.className = "text-xs leading-relaxed text-slate-400";
-        variantNote.textContent = reference.variantNote;
-        container.appendChild(variantNote);
-      }
-
-      const source = document.createElement("p");
-      source.className = "text-xs text-slate-400";
-      const sourceHost = reference.url ? new URL(reference.url).hostname : null;
-      source.textContent = reference.manufacturer
-        ? `${reference.manufacturer}${sourceHost ? ` · ${sourceHost}` : ""}`
-        : sourceHost
-          ? `Source: ${sourceHost}`
-          : "Source not verified";
-      container.appendChild(source);
-
-      if (reference.url) {
-        const pageLink = document.createElement("a");
-        pageLink.href = reference.url;
-        pageLink.target = "_blank";
-        pageLink.rel = "noopener noreferrer";
-        pageLink.className =
-          "inline-flex items-center gap-1.5 text-xs font-semibold text-violet-200 underline decoration-violet-400/50 underline-offset-2 hover:text-violet-100";
-        pageLink.textContent = reference.manufacturer
-          ? "Open manufacturer product page"
-          : "Open reference source";
-        const externalIcon = document.createElement("i");
-        externalIcon.className = "fa-solid fa-arrow-up-right-from-square";
-        pageLink.appendChild(externalIcon);
-        container.appendChild(pageLink);
-      }
-
-      const images = Array.isArray(reference.images) ? reference.images : [];
-      if (!images.length) {
-        const noPhotos = document.createElement("p");
-        noPhotos.className = "text-xs leading-relaxed text-slate-400";
-        noPhotos.textContent = reference.photoNote || (reference.conceptual
-          ? "This is a conceptual component, not a specific product. Open the reference source for related documentation."
-          : "No official product photos have been verified for this reference yet.");
-        container.appendChild(noPhotos);
-        return;
-      }
-
-      const gallery = document.createElement("div");
-      gallery.className = "grid grid-cols-2 gap-2 sm:grid-cols-3";
-      images.forEach((image) => {
-        if (!image || typeof image.url !== "string" || !image.url.trim()) return;
-
-        const photoLink = document.createElement("a");
-        photoLink.href = image.url;
-        photoLink.target = "_blank";
-        photoLink.rel = "noopener noreferrer";
-        photoLink.className =
-          "group overflow-hidden rounded-lg border border-slate-700/80 bg-[#080d17] focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-300";
-        photoLink.title = image.caption || `Open original ${reference.model} photo`;
-
-        const photo = document.createElement("img");
-        photo.src = image.url;
-        photo.alt = image.alt || `${reference.model} product photo`;
-        photo.loading = "lazy";
-        photo.decoding = "async";
-        photo.className =
-          "aspect-[4/3] w-full object-contain transition-transform group-hover:scale-105";
-        photo.addEventListener("error", () => {
-          photoLink.remove();
-          if (!gallery.childElementCount) {
-            const fallback = document.createElement("p");
-            fallback.className = "col-span-full text-xs text-slate-400";
-            fallback.textContent =
-              "The manufacturer photo could not be loaded. Open the product page to view current images.";
-            gallery.appendChild(fallback);
-          }
-        }, { once: true });
-
-        photoLink.appendChild(photo);
-        if (image.caption) {
-          const caption = document.createElement("span");
-          caption.className = "block px-2 py-1.5 text-[10px] text-slate-400";
-          caption.textContent = image.caption;
-          photoLink.appendChild(caption);
-        }
-        gallery.appendChild(photoLink);
-      });
-
-      if (gallery.querySelector("a")) {
-        container.appendChild(gallery);
-        const attribution = document.createElement("p");
-        attribution.className = "text-[10px] text-slate-500";
-        attribution.textContent =
-          "Product images are linked from their original source; open a photo to view it directly.";
-        container.appendChild(attribution);
-      } else if (gallery.childElementCount) {
-        container.appendChild(gallery);
-      }
+      const link = document.createElement("a");
+      link.href = imageUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.className =
+        "inline-flex items-center gap-1.5 w-full px-4 py-2.5 rounded-lg border border-cyanGlow/40 bg-cyanGlow/10 text-cyanLight font-semibold hover:bg-cyanGlow/20 hover:text-cyanGlow transition-all";
+      link.textContent = "View Example Picture";
+      const externalIcon = document.createElement("i");
+      externalIcon.className = "fa-solid fa-arrow-up-right-from-square";
+      link.appendChild(externalIcon);
+      container.appendChild(link);
     }
 
-    renderManufacturerReference(data);
+    renderExamplePicture(data);
 
     // Cleanup previous group
     if (currentMeshGroup) {
